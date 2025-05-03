@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const trashReportRoutes_1 = __importDefault(require("./routes/trashReportRoutes"));
 const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
+const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 // Load environment variables
 dotenv_1.default.config();
 // Initialize Express app
@@ -21,8 +22,9 @@ app.use(express_1.default.urlencoded({ extended: true }));
 // Serve static files from the 'public' directory
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../public/uploads')));
 // Routes
-app.use('/api', trashReportRoutes_1.default);
 app.use('/api', uploadRoutes_1.default);
+app.use('/api/auth', authRoutes_1.default);
+app.use('/api/reports', trashReportRoutes_1.default);
 // Home route
 app.get('/', (_req, res) => {
     res.send('ECCC API is running');

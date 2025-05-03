@@ -20,6 +20,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import TrashIcon from '../../assets/trash-icon';
+import BottomNavigation from '../components/BottomNavigation';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
@@ -31,6 +32,13 @@ const HomeScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<HomeScreenRouteProp>();
+
+  useEffect(() => {
+    // Auto-redirect to Camera screen as that should be the primary screen
+    setTimeout(() => {
+      navigation.replace('Camera');
+    }, 100);
+  }, []);
 
   const renderReports = () => {
     if (!Array.isArray(reports) || reports.length === 0) {

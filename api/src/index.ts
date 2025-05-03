@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import trashReportRoutes from './routes/trashReportRoutes';
 import uploadRoutes from './routes/uploadRoutes';
+import authRoutes from './routes/authRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -21,8 +22,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Routes
-app.use('/api', trashReportRoutes);
 app.use('/api', uploadRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/reports', trashReportRoutes);
 
 // Home route
 app.get('/', (_req, res) => {

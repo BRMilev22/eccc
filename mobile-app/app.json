@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ECCC",
-    "slug": "eccc-mobile-app",
+    "name": "TrashTracker",
+    "slug": "trash-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,6 +19,10 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.trashtracker.app",
+      "config": {
+        "googleMapsApiKey": "YOUR_IOS_API_KEY"
+      },
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to take photos of trash piles.",
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show it on the map and associate it with trash reports."
@@ -28,6 +32,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4CAF50"
+      },
+      "package": "com.trashtracker.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_ANDROID_API_KEY"
+        }
       },
       "permissions": [
         "CAMERA",
@@ -45,6 +55,6 @@
     ],
     "sdkVersion": "52.0.0",
     "jsEngine": "hermes",
-    "newArchEnabled": true
+    "newArchEnabled": false
   }
 }

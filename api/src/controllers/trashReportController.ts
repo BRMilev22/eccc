@@ -1,79 +1,234 @@
 import { Request, Response } from 'express';
-import { createTrashReport, getAllTrashReports, getTrashReportById, TrashReport } from '../models/trashReport';
+import { 
+  createTrashReport, 
+  getAllTrashReports, 
+  getTrashReportById, 
+  updateTrashReportStatus,
+  getReportsByUserId,
+  updateTrashReport,
+  deleteTrashReportById
+} from '../models/trashReport';
 
+// Get all trash reports
+export const getAllReports = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const reports = await getAllTrashReports();
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error getting trash reports:', error);
+    res.status(500).json({ error: 'Failed to retrieve trash reports' });
+  }
+};
+
+// Get a specific trash report by ID
+export const getReportById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid report ID' });
+      return;
+    }
+    
+    const report = await getTrashReportById(id);
+    
+    if (!report) {
+      res.status(404).json({ error: 'Trash report not found' });
+      return;
+    }
+    
+    res.status(200).json(report);
+  } catch (error) {
+    console.error('Error getting trash report:', error);
+    res.status(500).json({ error: 'Failed to retrieve trash report' });
+  }
+};
+
+// Create a new trash report
 export const createReport = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { photoUrl, latitude, longitude, description } = req.body;
-
-    // Validate input
+    const { photoUrl, latitude, longitude, description, trashType, severityLevel, status } = req.body;
+    
+    // Get user ID from auth token if available
+    const userId = (req as any).user?.id || null;
+    
+    // Validate required fields
     if (!photoUrl || latitude === undefined || longitude === undefined) {
       res.status(400).json({ error: 'Photo URL, latitude, and longitude are required' });
       return;
     }
-
-    const trashReport: TrashReport = {
+    
+    // Check if this is a guest submission (description contains [Reported by Guest])
+    const isGuest = description && description.includes('[Reported by Guest]');
+    
+    // Create report
+    const newReport = await createTrashReport({
+      userId,
       photoUrl,
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      description
-    };
-
-    const newReport = await createTrashReport(trashReport);
+      description,
+      trashType,
+      severityLevel,
+      status: status || 'REPORTED'
+    });
     
-    // Format response with both photoUrl and photo_url for consistency
-    const response = {
-      ...newReport,
-      photo_url: newReport.photoUrl, // Add snake_case version for mobile app
-    };
-    
-    res.status(201).json(response);
+    res.status(201).json(newReport);
   } catch (error) {
     console.error('Error creating trash report:', error);
     res.status(500).json({ error: 'Failed to create trash report' });
   }
 };
 
-export const getAllReports = async (_req: Request, res: Response): Promise<void> => {
+// Create a new trash report as a guest (no authentication required)
+export const createGuestReport = async (req: Request, res: Response): Promise<void> => {
   try {
-    const reports = await getAllTrashReports();
+    const { photoUrl, latitude, longitude, description, trashType, severityLevel, status } = req.body;
     
-    // Format each report to include both photoUrl and photo_url
-    const formattedReports = reports.map(report => ({
-      ...report,
-      photo_url: report.photoUrl, // Ensure snake_case for older clients
-      photoUrl: report.photoUrl,  // Ensure camelCase for newer clients
-    }));
+    // Validate required fields
+    if (!photoUrl || latitude === undefined || longitude === undefined) {
+      res.status(400).json({ error: 'Photo URL, latitude, and longitude are required' });
+      return;
+    }
     
-    res.status(200).json(formattedReports);
+    // Add "Guest" indicator to the description if not empty
+    let guestDescription = description || '';
+    if (guestDescription) {
+      guestDescription = `${guestDescription} [Reported by Guest]`;
+    } else {
+      guestDescription = '[Reported by Guest]';
+    }
+    
+    // Create report with special guest indicator
+    const newReport = await createTrashReport({
+      userId: null, // No user ID for guest
+      photoUrl,
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      description: guestDescription,
+      trashType,
+      severityLevel,
+      status: status || 'REPORTED'
+    });
+    
+    res.status(201).json(newReport);
   } catch (error) {
-    console.error('Error fetching trash reports:', error);
-    res.status(500).json({ error: 'Failed to fetch trash reports' });
+    console.error('Error creating guest trash report:', error);
+    res.status(500).json({ error: 'Failed to create guest trash report' });
   }
 };
 
-export const getReportById = async (req: Request, res: Response): Promise<void> => {
+// Update a trash report's status
+export const updateReportStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id);
+    const { status } = req.body;
+    
     if (isNaN(id)) {
-      res.status(400).json({ error: 'Invalid ID format' });
+      res.status(400).json({ error: 'Invalid report ID' });
       return;
     }
-
-    const report = await getTrashReportById(id);
-    if (!report) {
+    
+    if (!status) {
+      res.status(400).json({ error: 'Status is required' });
+      return;
+    }
+    
+    const success = await updateTrashReportStatus(id, status);
+    
+    if (!success) {
       res.status(404).json({ error: 'Trash report not found' });
       return;
     }
-
-    // Format response with both photoUrl and photo_url
-    const formattedReport = {
-      ...report,
-      photo_url: report.photoUrl, // Add snake_case version for mobile app
-    };
     
-    res.status(200).json(formattedReport);
+    res.status(200).json({ message: 'Status updated successfully' });
   } catch (error) {
-    console.error('Error fetching trash report:', error);
-    res.status(500).json({ error: 'Failed to fetch trash report' });
+    console.error('Error updating trash report status:', error);
+    res.status(500).json({ error: 'Failed to update trash report status' });
+  }
+};
+
+// Get trash reports by user ID
+export const getReportsByUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get the authenticated user's ID
+    const authUser = (req as any).user;
+    
+    // Allow guest access to routes
+    let userId;
+    if (req.params.userId) {
+      userId = parseInt(req.params.userId);
+    } else if (authUser && authUser.id) {
+      userId = authUser.id;
+    } else {
+      res.status(400).json({ error: 'User ID required' });
+      return;
+    }
+    
+    const reports = await getReportsByUserId(userId);
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error getting user trash reports:', error);
+    res.status(500).json({ error: 'Failed to retrieve user trash reports' });
+  }
+};
+
+// Update a trash report (including trash type and severity)
+export const updateReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    const { description, status, trashType, severityLevel } = req.body;
+    
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid report ID' });
+      return;
+    }
+    
+    // Check if there's anything to update
+    if (!description && !status && !trashType && !severityLevel) {
+      res.status(400).json({ error: 'No fields to update' });
+      return;
+    }
+    
+    const success = await updateTrashReport(id, {
+      description,
+      status,
+      trashType,
+      severityLevel
+    });
+    
+    if (!success) {
+      res.status(404).json({ error: 'Trash report not found' });
+      return;
+    }
+    
+    res.status(200).json({ message: 'Trash report updated successfully' });
+  } catch (error) {
+    console.error('Error updating trash report:', error);
+    res.status(500).json({ error: 'Failed to update trash report' });
+  }
+};
+
+// Delete a trash report
+export const deleteReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      res.status(400).json({ error: 'Invalid report ID' });
+      return;
+    }
+    
+    const success = await deleteTrashReportById(id);
+    
+    if (!success) {
+      res.status(404).json({ error: 'Trash report not found' });
+      return;
+    }
+    
+    res.status(200).json({ message: 'Trash report deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting trash report:', error);
+    res.status(500).json({ error: 'Failed to delete trash report' });
   }
 }; 
