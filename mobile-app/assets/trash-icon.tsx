@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { Path } from 'react-native-svg';
-
+import { ChemistryTheme } from '../src/theme/theme';
 interface TrashIconProps {
   width?: number;
   height?: number;
@@ -10,7 +10,7 @@ interface TrashIconProps {
 const TrashIcon: React.FC<TrashIconProps> = ({ 
   width = 150, 
   height = 150, 
-  color = '#4CAF50' 
+  color = ChemistryTheme.colors.primary 
 }) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">

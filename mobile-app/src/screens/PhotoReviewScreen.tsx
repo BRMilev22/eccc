@@ -24,41 +24,57 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { Button } from 'react-native-paper';
+import { ChemistryTheme } from '../theme/theme';
 
 type PhotoReviewScreenRouteProp = RouteProp<RootStackParamList, 'PhotoReview'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'PhotoReview'>;
 
 const trashTypes = [
-  { label: 'Select Trash Type', value: '' },
-  { label: 'Plastic (bottles, bags, containers)', value: 'PLASTIC', color: '#1E88E5', icon: 'water-outline' },
-  { label: 'Food & Organic Waste', value: 'FOOD', color: '#8BC34A', icon: 'fast-food-outline' },
-  { label: 'Hazardous Materials', value: 'HAZARDOUS', color: '#F44336', icon: 'warning-outline' },
-  { label: 'Paper & Cardboard', value: 'PAPER', color: '#795548', icon: 'newspaper-outline' },
-  { label: 'Electronics', value: 'ELECTRONICS', color: '#607D8B', icon: 'hardware-chip-outline' },
-  { label: 'Mixed/Other', value: 'MIXED', color: '#9C27B0', icon: 'trash-outline' },
+  { label: 'Изберете тип отпадък', value: '' },
+  { label: 'Пластмаса (бутилки, торбички, кутии)', value: 'PLASTIC', color: '#1E88E5', icon: 'water-outline' },
+  { label: 'Хранителни и органични', value: 'FOOD', color: '#8BC34A', icon: 'fast-food-outline' },
+  { label: 'Опасни материали', value: 'HAZARDOUS', color: '#F44336', icon: 'warning-outline' },
+  { label: 'Хартия и картон', value: 'PAPER', color: '#795548', icon: 'newspaper-outline' },
+  { label: 'Смесени/Други', value: 'MIXED', color: '#9C27B0', icon: 'trash-outline' },
 ];
 
+const severityLabels = {
+  LOW: 'НИС',
+  MEDIUM: 'СРЕ',
+  HIGH: 'ВИС'
+};
+
 const severityLevels = [
-  { label: 'Select Severity Level', value: '' },
+  { label: 'Изберете ниво на сериозност', value: '' },
   { 
-    label: 'Low - Small amount, easy to clean', 
+    label: 'ф - Малко количество, лесно за почистване', 
     value: 'LOW', 
     color: '#8BC34A',
-    description: 'A small amount of trash that one person could clean up in a few minutes'
+    description: 'Малко количество отпадъци, което един човек може да почисти за няколко минути'
   },
   { 
-    label: 'Medium - Moderate pile, needs attention', 
+    label: 'Средно - Умерено количество, нужда от внимание', 
     value: 'MEDIUM', 
     color: '#FFC107',
-    description: 'A noticeable amount of trash that would take some effort to clean up'
+    description: 'Забележимо количество отпадъци, които биха изисквали усилие за почистване'
   },
   { 
-    label: 'High - Large dump, urgent cleanup needed', 
+    label: 'Високо - Голямо струпване, нужда от спешно почистване', 
     value: 'HIGH', 
     color: '#F44336',
-    description: 'A significant amount of trash requiring organized cleanup effort'
+    description: 'Значително количество отпадъци, изискващо организирано почистване'
   },
 ];
+
+// Helper function for translating severity levels
+const getSeverityLabel = (value: string) => {
+  switch(value) {
+    case 'LOW': return 'НИС';
+    case 'MEDIUM': return 'СРЕ';
+    case 'HIGH': return 'ВИС';
+    default: return value;
+  }
+};
 
 const PhotoReviewScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -84,7 +100,7 @@ const PhotoReviewScreen: React.FC = () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         
         if (status !== 'granted') {
-          setLocationError('Permission to access location was denied');
+          setLocationError('Достъпът до местоположението е отказан');
           setLocationLoading(false);
           return;
         }
@@ -107,7 +123,7 @@ const PhotoReviewScreen: React.FC = () => {
       
       // Validate location
       if (!location) {
-        Alert.alert('Error', 'Location is required. Please try again with location enabled.');
+        Alert.alert('Грешка', 'Необходимо е местоположение. Моля, опитайте отново с включено местоположение.');
         setSubmitting(false);
         return;
       }
@@ -141,10 +157,10 @@ const PhotoReviewScreen: React.FC = () => {
       if (!isAuthenticated) {
         // For guest submissions, show an informative message
         Alert.alert(
-          'Report Submitted as Guest',
-          'Your report has been submitted anonymously. Create an account to track and manage your reports!',
+          'Докладът е изпратен като гост',
+          'Вашият доклад е изпратен анонимно. Създайте акаунт, за да проследявате и управлявате докладите си!',
           [
-            { text: 'OK', onPress: () => navigateHome() }
+            { text: 'Добре', onPress: () => navigateHome() }
           ]
         );
       } else {
@@ -160,11 +176,11 @@ const PhotoReviewScreen: React.FC = () => {
       if (error.response && error.response.status === 401) {
         // Handle auth error more gracefully - try to submit as guest
         Alert.alert(
-          'Submit as Guest?',
-          'You are not logged in. Would you like to submit this report as a guest?',
+          'Изпращане като гост?',
+          'Не сте влезли в системата. Искате ли да изпратите този доклад като гост?',
           [
             {
-              text: 'Yes, submit',
+              text: 'Да, изпрати',
               onPress: async () => {
                 try {
                   // Submit as guest using the guest endpoint
@@ -183,13 +199,13 @@ const PhotoReviewScreen: React.FC = () => {
                   const result = await submitTrashReport(reportData);
                   setSubmitSuccess(true);
                   
-                  Alert.alert('Success', 'Thank you for your report! It has been submitted as a guest.');
+                  Alert.alert('Успех', 'Благодарим за доклада! Изпратен е като гост.');
                   
                   setTimeout(() => {
                     navigateHome();
                   }, 1500);
                 } catch (innerError) {
-                  Alert.alert('Error', 'Failed to submit report. Please try again later.');
+                  Alert.alert('Грешка', 'Неуспешно изпращане на доклада. Моля, опитайте отново по-късно.');
                   console.error('Error in guest submission:', innerError);
                   setSubmitting(false);
                 }
@@ -204,7 +220,7 @@ const PhotoReviewScreen: React.FC = () => {
         );
       } else {
         // Generic error
-        Alert.alert('Error', 'Failed to submit report. Please try again.');
+        Alert.alert('Грешка', 'Неуспешно изпращане на доклада. Моля, опитайте отново.');
         setSubmitting(false);
       }
     }
@@ -214,10 +230,10 @@ const PhotoReviewScreen: React.FC = () => {
     try {
       setSubmitting(true);
       const result = await testApiConnection();
-      Alert.alert('API Test', result.message);
+      Alert.alert('API Тест', result.message);
     } catch (error) {
       console.error('Error testing API:', error);
-      Alert.alert('API Test Failed', `Error: ${error}`);
+      Alert.alert('Неуспешен API тест', `Грешка: ${error}`);
     } finally {
       setSubmitting(false);
     }
@@ -239,7 +255,7 @@ const PhotoReviewScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Report Trash</Text>
+        <Text style={styles.headerTitle}>Преглед на снимка</Text>
         <View style={styles.placeholder} />
       </View>
       
@@ -249,20 +265,20 @@ const PhotoReviewScreen: React.FC = () => {
         </View>
         
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Location</Text>
+          <Text style={styles.sectionTitle}>Локация</Text>
           {locationLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#4CAF50" />
-              <Text style={styles.loadingText}>Getting your location...</Text>
+              <ActivityIndicator size="small" color={ChemistryTheme.colors.primary} />
+              <Text style={styles.loadingText}>Получаване на локация...</Text>
             </View>
           ) : locationError ? (
             <View style={styles.errorContainer}>
               <Ionicons name="warning" size={18} color="#F44336" />
-              <Text style={styles.errorText}>{locationError}</Text>
+              <Text style={styles.errorText}>Грешка при изпращане на снимка</Text>
             </View>
           ) : (
             <View style={styles.locationInfoContainer}>
-              <Ionicons name="location" size={18} color="#4CAF50" />
+              <Ionicons name="location" size={18} color={ChemistryTheme.colors.primary} />
               <Text style={styles.locationText}>
                 {location?.coords.latitude.toFixed(6)}, {location?.coords.longitude.toFixed(6)}
               </Text>
@@ -271,8 +287,8 @@ const PhotoReviewScreen: React.FC = () => {
         </View>
         
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Trash Type</Text>
-          <Text style={styles.sectionSubtitle}>What kind of trash did you find?</Text>
+          <Text style={styles.sectionTitle}>Тип отпадък</Text>
+          <Text style={styles.sectionSubtitle}>Какъв вид отпадък открихте?</Text>
           
           <View style={styles.trashTypeContainer}>
             {trashTypes.filter(type => type.value !== '').map(type => (
@@ -296,7 +312,7 @@ const PhotoReviewScreen: React.FC = () => {
                     trashType === type.value && { color: 'white' }
                   ]}
                 >
-                  {type.label.split(' ')[0]}
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -304,8 +320,8 @@ const PhotoReviewScreen: React.FC = () => {
         </View>
         
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Severity Level</Text>
-          <Text style={styles.sectionSubtitle}>How much trash is there?</Text>
+          <Text style={styles.sectionTitle}>Ниво на сериозност</Text>
+          <Text style={styles.sectionSubtitle}>Какво е количеството отпадъци?</Text>
           
           <View style={styles.severityContainer}>
             {severityLevels.filter(level => level.value !== '').map(level => (
@@ -325,7 +341,7 @@ const PhotoReviewScreen: React.FC = () => {
                       severityLevel === level.value && { color: 'white' }
                     ]}
                   >
-                    {level.value}
+                    {level.value === 'LOW' ? 'НИСК.' : level.value === 'MEDIUM' ? 'СРЕД.' : level.value === 'HIGH' ? 'ВИСО.' : level.value}
                   </Text>
                 </View>
                 <Text
@@ -342,12 +358,12 @@ const PhotoReviewScreen: React.FC = () => {
         </View>
         
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Additional Notes (Optional)</Text>
+          <Text style={styles.sectionTitle}>Допълнителни бележки (незадължително)</Text>
           <TextInput
             style={styles.descriptionInput}
             multiline
             numberOfLines={4}
-            placeholder="Add any additional details about this trash..."
+            placeholder="Добавете допълнителни детайли за отпадъците..."
             value={description}
             onChangeText={setDescription}
           />
@@ -360,7 +376,7 @@ const PhotoReviewScreen: React.FC = () => {
           onPress={testConnection}
           disabled={submitting}
         >
-          <Text style={styles.testButtonText}>Test API Connection</Text>
+          <Text style={styles.testButtonText}>Тест на връзката</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.submitButton} 
@@ -368,13 +384,13 @@ const PhotoReviewScreen: React.FC = () => {
           disabled={submitting || locationLoading}
         >
           <LinearGradient
-            colors={['#66BB6A', '#4CAF50']}
+            colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
             style={styles.gradientButton}
           >
             {submitting ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={styles.submitButtonText}>Submit Report</Text>
+              <Text style={styles.submitButtonText}>Изпрати</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>
@@ -525,7 +541,7 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 30,
-    backgroundColor: 'white',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -585,4 +601,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PhotoReviewScreen; 
+export default PhotoReviewScreen;

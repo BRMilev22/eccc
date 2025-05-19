@@ -21,57 +21,66 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import TrashIcon from '../../assets/trash-icon';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { ChemistryTheme } from '../theme/theme';
+import BottomNavigation from '../components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type IconName = keyof typeof Ionicons.glyphMap;
 
-// Define status colors and icons to have icons for each status
+type MapViewType = 'standard' | 'satellite' | 'hybrid' | 'terrain';
+
+const mapTypes = {
+  standard: 'Стандартна',
+  satellite: 'Сателитна',
+  hybrid: 'Хибридна',
+  terrain: 'Терен'
+} as const;
+
+// Define status colors and icons with proper icon types
 const statusInfo = {
-  REPORTED: { icon: "alert-circle", colors: ['#EF5350', '#D32F2F'] }, // Red gradient with alert icon
-  IN_PROGRESS: { icon: "refresh-circle", colors: ['#42A5F5', '#1976D2'] }, // Blue gradient with refresh icon
-  CLEANED: { icon: "checkmark-circle", colors: ['#66BB6A', '#388E3C'] }, // Green gradient with checkmark icon
-  VERIFIED: { icon: "shield-checkmark", colors: ['#AB47BC', '#7B1FA2'] }, // Purple gradient with shield-checkmark icon
-  DEFAULT: { icon: "help-circle", colors: ['#9E9E9E', '#616161'] } // Gray gradient with question mark icon
-};
+  REPORTED: { icon: 'alert-circle' as IconName, colors: ['#EF5350', '#D32F2F'], label: 'Новодокладвано' },
+  IN_PROGRESS: { icon: 'refresh-circle' as IconName, colors: [ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary], label: 'В процес на почистване' },
+  CLEANED: { icon: 'checkmark-circle' as IconName, colors: [ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary], label: 'Почистено' },
+  VERIFIED: { icon: 'shield-checkmark' as IconName, colors: ['#AB47BC', '#7B1FA2'], label: 'Проверено почистено' },
+  DEFAULT: { icon: 'help-circle' as IconName, colors: ['#9E9E9E', '#616161'], label: 'Неизвестно' }
+} as const;
 
-// Define trash type icons with distinct icons and colors
+type StatusType = keyof typeof statusInfo;
+
+// Define trash type icons with proper icon types
 const trashTypeInfo = {
-  PLASTIC: { icon: "water", color: "#2196F3" }, // Water icon for plastic
-  PAPER: { icon: "newspaper", color: "#FFC107" }, // Newspaper icon for paper
-  FOOD: { icon: "fast-food", color: "#FF9800" }, // Fast food icon for food waste
-  HAZARDOUS: { icon: "warning", color: "#F44336" }, // Warning icon for hazardous
-  ELECTRONICS: { icon: "hardware-chip", color: "#9C27B0" }, // Chip icon for electronics
-  MIXED: { icon: "layers", color: "#795548" }, // Layers icon for mixed trash
-  DEFAULT: { icon: "trash", color: "#9E9E9E" } // Trash icon for default
-};
+  PLASTIC: { icon: 'water' as IconName, color: "#2196F3", label: 'Пластмаса' },
+  PAPER: { icon: 'newspaper' as IconName, color: "#FFC107", label: 'Хартия' },
+  FOOD: { icon: 'fast-food' as IconName, color: "#FF9800", label: 'Храна' },
+  HAZARDOUS: { icon: 'warning' as IconName, color: "#F44336", label: 'Опасни ⚠️' },
+  ELECTRONICS: { icon: 'hardware-chip' as IconName, color: "#9C27B0", label: 'Електроника' },
+  MIXED: { icon: 'layers' as IconName, color: "#795548", label: 'Смесени' },
+  DEFAULT: { icon: 'trash' as IconName, color: "#9E9E9E", label: 'Друго' }
+} as const;
 
-// Define severity icons and colors
+type TrashType = keyof typeof trashTypeInfo;
+
+// Define severity levels with proper icon types
 const severityInfo = {
-  LOW: { icon: "thermometer-outline", color: "#8BC34A" }, // Thermometer with low temperature for low severity
-  MEDIUM: { icon: "flame-outline", color: "#FFC107" }, // Small flame for medium severity
-  HIGH: { icon: "flame", color: "#F44336" }, // Large flame for high severity
-  DEFAULT: { icon: "remove", color: "#9E9E9E" } // Default icon
-};
+  LOW: { icon: 'thermometer-outline' as IconName, color: "#8BC34A", label: 'Ниско' },
+  MEDIUM: { icon: 'flame-outline' as IconName, color: "#FFC107", label: 'Средно' },
+  HIGH: { icon: 'flame' as IconName, color: "#F44336", label: 'Високо' },
+  DEFAULT: { icon: 'remove' as IconName, color: "#9E9E9E", label: 'Неизвестно' }
+} as const;
 
-// Define status descriptions for the legend
-const statusDescriptions = {
-  REPORTED: 'Newly reported',
-  IN_PROGRESS: 'Cleanup in progress',
-  CLEANED: 'Cleaned',
-  VERIFIED: 'Verified clean'
-};
+type SeverityLevel = keyof typeof severityInfo;
 
 // Helper function to format dates nicely
 const formatDate = (dateString: string | undefined): string => {
-  if (!dateString) return 'Unknown date';
+  if (!dateString) return 'Неизвестна дата';
   
   try {
     const date = new Date(dateString);
     
     // Check if date is valid
     if (isNaN(date.getTime())) {
-      return 'Recently reported';
+      return 'Наскоро докладвано';
     }
     
     // Format as relative time if recent, otherwise show full date
@@ -85,23 +94,23 @@ const formatDate = (dateString: string | undefined): string => {
       if (diffHours < 1) {
         // Less than an hour ago
         const diffMinutes = Math.floor(diffTime / (1000 * 60));
-        return diffMinutes < 1 ? 'Just now' : `${diffMinutes} minutes ago`;
+        return diffMinutes < 1 ? 'Току-що' : `преди ${diffMinutes} минути`;
       }
-      return `${diffHours} hours ago`;
+      return `преди ${diffHours} часа`;
     } else if (diffDays < 7) {
       // Less than a week ago
-      return `${diffDays} days ago`;
+      return `преди ${diffDays} дни`;
     } else {
       // More than a week ago
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString('bg-BG', {
         year: 'numeric',
-        month: 'short',
+        month: 'long',
         day: 'numeric'
       });
     }
   } catch (error) {
     console.error('Error formatting date:', error);
-    return 'Recently reported';
+    return 'Наскоро докладвано';
   }
 };
 
@@ -110,11 +119,11 @@ const MapScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<StatusType | null>(null);
   const [showLegend, setShowLegend] = useState(false);
-  const [mapType, setMapType] = useState('standard');
+  const [mapType, setMapType] = useState<MapViewType>('standard');
   const mapRef = useRef<MapView>(null);
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
   const [selectedReport, setSelectedReport] = useState<TrashReport | null>(null);
 
@@ -126,7 +135,7 @@ const MapScreen: React.FC = () => {
         // Get user's location
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          setError('Permission to access location was denied');
+          setError('Разрешението за достъп до местоположение е отказано');
           setLoading(false);
           return;
         }
@@ -137,10 +146,10 @@ const MapScreen: React.FC = () => {
         // Fetch trash reports
         const data = await getTrashReports();
         
-        // Log reports to check trash_type field
+        // Log reports to check trashType field
         console.log("Trash reports data:", data.map(r => ({
           id: r.id,
-          trash_type: r.trash_type || r.trashType || "N/A",
+          trashType: r.trashType || "N/A",
           status: r.status || "N/A",
           severity: r.severityLevel || "N/A"
         })));
@@ -156,7 +165,7 @@ const MapScreen: React.FC = () => {
         setReports(validReports);
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError('Failed to load trash reports. Please try again.');
+        setError('Неуспешно зареждане на докладите. Моля, опитайте отново.');
       } finally {
         setLoading(false);
       }
@@ -177,7 +186,7 @@ const MapScreen: React.FC = () => {
   const handleMarkerPress = (report: TrashReport) => {
     // Validate the report before navigating
     if (!report || !report.id) {
-      Alert.alert('Error', 'Invalid report data');
+      Alert.alert('Грешка', 'Невалидни данни за доклада');
       return;
     }
     
@@ -186,7 +195,7 @@ const MapScreen: React.FC = () => {
       (typeof report.latitude !== 'number' && typeof report.latitude !== 'string') || 
       (typeof report.longitude !== 'number' && typeof report.longitude !== 'string')
     ) {
-      Alert.alert('Error', 'This report has invalid location data');
+      Alert.alert('Грешка', 'Този доклад има невалидни данни за местоположение');
       return;
     }
     
@@ -220,7 +229,7 @@ const MapScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleFilterPress = (category: string | null) => {
+  const handleFilterPress = (category: StatusType | null) => {
     setSelectedCategory(selectedCategory === category ? null : category);
   };
 
@@ -240,59 +249,41 @@ const MapScreen: React.FC = () => {
   };
 
   const getStatusInfo = (status: string | undefined) => {
-    const normalizedStatus = status ? status.toUpperCase() : 'REPORTED';
-    return statusInfo[normalizedStatus] || statusInfo.DEFAULT;
+    if (!status) return statusInfo.DEFAULT;
+    return statusInfo[status.toUpperCase() as StatusType] || statusInfo.DEFAULT;
   };
 
   const getTrashTypeInfo = (trashType: string | undefined) => {
     if (!trashType) return trashTypeInfo.DEFAULT;
-    
-    // First console.log to see what we're getting from API
-    console.log(`Getting trash type info for: "${trashType}"`);
-    
-    // Normalize the trash type by converting to uppercase and trimming
-    const normalizedType = trashType.trim().toUpperCase();
-    
-    // Check if the normalized type exists in our definitions
-    const info = trashTypeInfo[normalizedType];
-    
-    // If not found, log it and return default
-    if (!info) {
-      console.log(`No matching icon found for type: ${normalizedType}, using default`);
-      return trashTypeInfo.DEFAULT;
-    }
-    
-    return info;
+    return trashTypeInfo[trashType.trim().toUpperCase() as TrashType] || trashTypeInfo.DEFAULT;
   };
 
   const getSeverityInfo = (severity: string | undefined) => {
     if (!severity) return severityInfo.DEFAULT;
-    const normalizedSeverity = severity.toUpperCase();
-    return severityInfo[normalizedSeverity] || severityInfo.DEFAULT;
+    return severityInfo[severity.toUpperCase() as SeverityLevel] || severityInfo.DEFAULT;
   };
 
   const StatusLegend = () => (
     <View style={styles.legendContainer}>
-      <Text style={styles.legendTitle}>Map Legend:</Text>
+      <Text style={styles.legendTitle}>Легенда:</Text>
       
-      <Text style={styles.legendSectionTitle}>Status (Center Icon)</Text>
-      {Object.entries(statusInfo).filter(([key]) => key !== 'DEFAULT').map(([status, info]) => (
+      <Text style={styles.legendSectionTitle}>Статус (централна иконка)</Text>
+      {(Object.keys(statusInfo) as Array<StatusType>).filter(key => key !== 'DEFAULT').map((status) => (
         <TouchableOpacity 
           key={status} 
           style={[
             styles.legendItem,
             selectedCategory === status && styles.legendItemSelected
           ]}
-          onPress={() => handleFilterPress(status)}
         >
-          <View style={[styles.legendIndicator, { backgroundColor: info.colors[0] }]}>
-            <Ionicons name={info.icon} size={12} color="#FFF" />
+          <View style={[styles.legendIndicator, { backgroundColor: statusInfo[status].colors[0] }]}>
+            <Ionicons name={statusInfo[status].icon} size={12} color="#FFF" />
           </View>
-          <Text style={styles.legendText}>{statusDescriptions[status]}</Text>
+          <Text style={styles.legendText}>{statusInfo[status].label}</Text>
         </TouchableOpacity>
       ))}
       
-      <Text style={styles.legendSectionTitle}>Trash Types (Top-Right Badge)</Text>
+      <Text style={styles.legendSectionTitle}>Тип отпадък (горен десен ъгъл)</Text>
       {Object.entries(trashTypeInfo).filter(([key]) => key !== 'DEFAULT').map(([type, info]) => (
         <View key={type} style={styles.legendItem}>
           <View style={[
@@ -306,21 +297,40 @@ const MapScreen: React.FC = () => {
             styles.legendText,
             type === 'HAZARDOUS' && styles.legendHazardousText
           ]}>
-            {type.charAt(0) + type.slice(1).toLowerCase()}
-            {type === 'HAZARDOUS' && ' ⚠️'}
+            {info.label}
           </Text>
         </View>
       ))}
       
-      <Text style={styles.legendSectionTitle}>Severity Levels (Bottom-Right Badge)</Text>
+      <Text style={styles.legendSectionTitle}>Ниво на сериозност (долен десен ъгъл)</Text>
       {Object.entries(severityInfo).filter(([key]) => key !== 'DEFAULT').map(([level, info]) => (
         <View key={level} style={styles.legendItem}>
           <View style={[styles.legendIndicator, { backgroundColor: info.color }]}>
             <Ionicons name={info.icon} size={12} color="#FFF" />
           </View>
-          <Text style={styles.legendText}>{level.charAt(0) + level.slice(1).toLowerCase()}</Text>
+          <Text style={styles.legendText}>
+            {info.label}
+          </Text>
         </View>
       ))}
+    </View>
+  );
+
+  const renderFloatingButtons = () => (
+    <View style={styles.floatingButtonsContainer}>
+      <TouchableOpacity 
+        style={styles.floatingButton}
+        onPress={handleReportPress}
+      >
+        <LinearGradient
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
+          style={styles.gradientButton}
+        >
+          <Ionicons name="camera" size={24} color="white" />
+        </LinearGradient>
+      </TouchableOpacity>
+      
+      {/* ... other buttons */}
     </View>
   );
 
@@ -328,11 +338,11 @@ const MapScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['rgba(46, 125, 50, 0.7)', 'rgba(76, 175, 80, 0.7)']}
+          colors={['rgba(59, 89, 152, 0.7)', 'rgba(74, 108, 179, 0.7)']}
           style={styles.loadingGradient}
         >
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={styles.loadingText}>Loading map...</Text>
+          <Text style={styles.loadingText}>Зареждане на картата...</Text>
         </LinearGradient>
       </View>
     );
@@ -348,10 +358,10 @@ const MapScreen: React.FC = () => {
             onPress={() => navigation.navigate('Map')}
           >
             <LinearGradient
-              colors={['#66BB6A', '#4CAF50']}
+              colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
               style={styles.retryButtonGradient}
             >
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>Опитай отново</Text>
             </LinearGradient>
           </TouchableOpacity>
           
@@ -363,7 +373,7 @@ const MapScreen: React.FC = () => {
               colors={['rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.5)']}
               style={styles.backButtonGradient}
             >
-              <Text style={styles.backButtonText}>← Back</Text>
+              <Text style={styles.backButtonText}>← Назад</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -392,9 +402,9 @@ const MapScreen: React.FC = () => {
           </TouchableOpacity>
           
           <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Trash Reports Map</Text>
+            <Text style={styles.headerTitle}>Карта на еко докладите</Text>
             <Text style={styles.headerSubtitle}>
-              {selectedCategory ? `Filtered: ${statusDescriptions[selectedCategory]}` : 'All reported trash locations'}
+              {selectedCategory ? `Филтрирано: ${statusInfo[selectedCategory].label}` : 'Всички докладвани локации'}
             </Text>
           </View>
 
@@ -402,7 +412,7 @@ const MapScreen: React.FC = () => {
             style={styles.legendToggleButton}
             onPress={() => setShowLegend(!showLegend)}
           >
-            <Ionicons name={showLegend ? "close" : "filter"} size={22} color="#2E7D32" />
+            <Ionicons name={showLegend ? "close" : "filter"} size={22} color={ChemistryTheme.colors.primary} />
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -439,11 +449,11 @@ const MapScreen: React.FC = () => {
             ? parseFloat(report.longitude) 
             : report.longitude;
             
-          // Get the report's trash type from either snake_case or camelCase property
-          const reportTrashType = report.trash_type || report.trashType;
+          // Get the report's trash type
+          const reportTrashType = report.trashType;
           
-          // Log the current report and its trash_type
-          console.log(`Rendering marker for report ${report.id}, trash_type: ${reportTrashType}, severity: ${report.severityLevel}`);
+          // Log the current report and its trashType
+          console.log(`Rendering marker for report ${report.id}, trashType: ${reportTrashType}, severity: ${report.severityLevel}`);
           
           // Get trash type info including icon and color
           const typeInfo = getTrashTypeInfo(reportTrashType);
@@ -531,7 +541,7 @@ const MapScreen: React.FC = () => {
             <Ionicons 
               name={mapType === 'standard' ? "map-outline" : "earth-outline"} 
               size={24} 
-              color="#2E7D32" 
+              color={ChemistryTheme.colors.primary} 
             />
           </LinearGradient>
         </TouchableOpacity>
@@ -544,34 +554,23 @@ const MapScreen: React.FC = () => {
             colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.8)']}
             style={styles.mapControlGradient}
           >
-            <Ionicons name="locate-outline" size={24} color="#2E7D32" />
+            <Ionicons name="locate-outline" size={24} color={ChemistryTheme.colors.primary} />
           </LinearGradient>
         </TouchableOpacity>
       </View>
       
       <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={styles.fab} 
-          onPress={handleReportPress}
-        >
-          <LinearGradient
-            colors={['#66BB6A', '#4CAF50']}
-            style={styles.fabGradient}
-          >
-            <Text style={styles.fabIcon}>+</Text>
-            <Text style={styles.fabText}>Report Trash</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        {renderFloatingButtons()}
       </View>
 
       {filteredReports.length === 0 && !loading && (
         <View style={styles.noDataContainer}>
           <View style={styles.glassCard}>
-            <Text style={styles.noDataText}>No trash reports found</Text>
+            <Text style={styles.noDataText}>Не са намерени доклади</Text>
             <Text style={styles.noDataSubtext}>
               {selectedCategory 
-                ? `No ${statusDescriptions[selectedCategory].toLowerCase()} reports available` 
-                : 'Be the first to report trash in your area!'}
+                ? `Няма ${statusInfo[selectedCategory].label.toLowerCase()} доклади` 
+                : 'Бъдете първият, който ще докладва в района!'}
             </Text>
           </View>
         </View>
@@ -585,7 +584,7 @@ const MapScreen: React.FC = () => {
             style={styles.previewGradient}
           >
             <View style={styles.previewHeader}>
-              <Text style={styles.previewTitle}>Trash Report #{selectedReport.id}</Text>
+              <Text style={styles.previewTitle}>Доклад за отпадък #{selectedReport.id}</Text>
               <TouchableOpacity onPress={handleClosePreview}>
                 <Ionicons name="close" size={24} color="#757575" />
               </TouchableOpacity>
@@ -620,26 +619,25 @@ const MapScreen: React.FC = () => {
                       <Ionicons name={getStatusInfo(selectedReport.status).icon} size={14} color="#FFF" />
                     </View>
                     <Text style={styles.attributeText}>
-                      Status: {(selectedReport.status || 'REPORTED').replace('_', ' ')}
+                      Статус: {statusInfo[(selectedReport.status || 'REPORTED') as StatusType].label}
                     </Text>
                   </View>
                   
                   {/* Trash type attribute row */}
-                  {(selectedReport.trash_type || selectedReport.trashType) && (
+                  {selectedReport.trashType && (
                     <View style={styles.attributeRow}>
                       <View style={[
                         styles.attributeIcon, 
-                        { backgroundColor: getTrashTypeInfo(selectedReport.trash_type || selectedReport.trashType).color },
-                        (selectedReport.trash_type || selectedReport.trashType || '').toUpperCase() === 'HAZARDOUS' && { borderColor: '#FF0000', borderWidth: 2 }
+                        { backgroundColor: getTrashTypeInfo(selectedReport.trashType).color },
+                        selectedReport.trashType.toUpperCase() === 'HAZARDOUS' && { borderColor: '#FF0000', borderWidth: 2 }
                       ]}>
-                        <Ionicons name={getTrashTypeInfo(selectedReport.trash_type || selectedReport.trashType).icon} size={14} color="#FFF" />
+                        <Ionicons name={getTrashTypeInfo(selectedReport.trashType).icon} size={14} color="#FFF" />
                       </View>
                       <Text style={[
                         styles.attributeText,
-                        (selectedReport.trash_type || selectedReport.trashType || '').toUpperCase() === 'HAZARDOUS' && { fontWeight: 'bold', color: '#F44336' }
+                        selectedReport.trashType.toUpperCase() === 'HAZARDOUS' && { fontWeight: 'bold', color: '#F44336' }
                       ]}>
-                        Type: {(selectedReport.trash_type || selectedReport.trashType || '').charAt(0) + (selectedReport.trash_type || selectedReport.trashType || '').slice(1).toLowerCase()}
-                        {(selectedReport.trash_type || selectedReport.trashType || '').toUpperCase() === 'HAZARDOUS' && ' ⚠️'}
+                        Тип: {getTrashTypeInfo(selectedReport.trashType).label}
                       </Text>
                     </View>
                   )}
@@ -651,7 +649,7 @@ const MapScreen: React.FC = () => {
                         <Ionicons name={getSeverityInfo(selectedReport.severityLevel).icon} size={14} color="#FFF" />
                       </View>
                       <Text style={styles.attributeText}>
-                        Severity: {selectedReport.severityLevel.charAt(0) + selectedReport.severityLevel.slice(1).toLowerCase()}
+                        Сериозност: {getSeverityInfo(selectedReport.severityLevel).label}
                       </Text>
                     </View>
                   )}
@@ -671,10 +669,10 @@ const MapScreen: React.FC = () => {
               onPress={handleViewDetails}
             >
               <LinearGradient
-                colors={['#66BB6A', '#4CAF50']}
+                colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                 style={styles.previewButtonGradient}
               >
-                <Text style={styles.previewButtonText}>View Details</Text>
+                <Text style={styles.previewButtonText}>Виж детайли</Text>
               </LinearGradient>
             </TouchableOpacity>
           </LinearGradient>
@@ -717,7 +715,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+    backgroundColor: 'rgba(59, 89, 152, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -728,16 +726,19 @@ const styles = StyleSheet.create({
   },
   navigationBackButtonText: {
     fontSize: 22,
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     fontWeight: 'bold',
   },
   headerTextContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   headerSubtitle: {
     fontSize: 14,
@@ -748,7 +749,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+    backgroundColor: 'rgba(59, 89, 152, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 12,
@@ -905,9 +906,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   backButtonText: {
-    color: '#2E7D32',
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 24,
+    color: ChemistryTheme.colors.primary,
   },
   markerContainer: {
     alignItems: 'center',
@@ -938,12 +938,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: ChemistryTheme.colors.primary,
   },
   markerBadgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
   },
   selectedMarker: {
     width: 48,
@@ -957,32 +957,27 @@ const styles = StyleSheet.create({
     bottom: 24,
     right: 24,
   },
-  fab: {
-    borderRadius: 30,
+  floatingButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+  },
+  floatingButton: {
+    borderRadius: 25,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 6,
+    elevation: 5,
   },
-  fabGradient: {
+  gradientButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 30,
-  },
-  fabIcon: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginRight: 8,
-  },
-  fabText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    borderRadius: 25,
   },
   noDataContainer: {
     position: 'absolute',
@@ -1031,7 +1026,7 @@ const styles = StyleSheet.create({
   previewTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
   },
   previewContent: {
     flexDirection: 'row',
@@ -1118,7 +1113,7 @@ const styles = StyleSheet.create({
   legendTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 8,
   },
   legendSectionTitle: {
@@ -1286,6 +1281,36 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontStyle: 'italic',
   },
+  activeFilterButton: {
+    backgroundColor: ChemistryTheme.colors.primary,
+    borderWidth: 2,
+    borderColor: ChemistryTheme.colors.primary,
+  },
+  activeFilterText: {
+    color: ChemistryTheme.colors.primary,
+    fontWeight: '600',
+  },
+  activeNavText: {
+    color: ChemistryTheme.colors.primary,
+    fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: ChemistryTheme.colors.primary,
+    marginBottom: 12,
+  },
+  statusOptionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: ChemistryTheme.colors.primary,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  statusOptionTextActive: {
+    fontWeight: 'bold',
+    color: ChemistryTheme.colors.primary,
+  },
 });
 
-export default MapScreen; 
+export default MapScreen;

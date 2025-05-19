@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { submitTrashReport, TrashReportData } from '../services/api';
+import { ChemistryTheme } from '../theme/theme';
 
 interface ReportFormProps {
   photoUri: string;
@@ -203,12 +204,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 5,
+    backgroundColor: ChemistryTheme.colors.primary,
   },
   cancelButton: {
     backgroundColor: '#999',
   },
   submitButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: ChemistryTheme.colors.primary,
   },
   disabledButton: {
     opacity: 0.6,

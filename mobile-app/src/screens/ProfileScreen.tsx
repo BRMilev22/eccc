@@ -29,6 +29,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import BottomNavigation from '../components/BottomNavigation';
 import { useAuth } from '../contexts/AuthContext';
+import { ChemistryTheme } from '../theme/theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Profile'>;
 
@@ -120,16 +121,34 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch(status) {
+  // Helper function for translating status
+  const getStatusLabel = (status: string) => {
+    switch (status) {
       case 'REPORTED':
-        return { bg: 'rgba(255, 152, 0, 0.2)', text: '#EF6C00' };
+        return 'Докладвано';
       case 'IN_PROGRESS':
-        return { bg: 'rgba(33, 150, 243, 0.2)', text: '#1976D2' };
+        return 'В процес';
       case 'CLEANED':
-        return { bg: 'rgba(76, 175, 80, 0.2)', text: '#2E7D32' };
+        return 'Почистено';
+      case 'VERIFIED':
+        return 'Проверено';
       default:
-        return { bg: 'rgba(158, 158, 158, 0.2)', text: '#757575' };
+        return 'Докладвано';
+    }
+  };
+
+  // Utility function to get colors for status
+  const getStatusColors = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'CLEANED':
+        return { bg: 'rgba(59, 89, 152, 0.2)', text: ChemistryTheme.colors.primary };
+      case 'IN_PROGRESS':
+        return { bg: 'rgba(66, 165, 245, 0.2)', text: '#1976D2' };
+      case 'VERIFIED':
+        return { bg: 'rgba(171, 71, 188, 0.2)', text: '#7B1FA2' };
+      case 'REPORTED':
+      default:
+        return { bg: 'rgba(239, 83, 80, 0.2)', text: '#D32F2F' };
     }
   };
 
@@ -152,7 +171,7 @@ const ProfileScreen: React.FC = () => {
         style={styles.gradientButton}
       >
         <Ionicons name="log-out-outline" size={18} color="#fff" style={styles.buttonIcon} />
-        <Text style={styles.logoutButtonText}>Logout</Text>
+        <Text style={styles.logoutButtonText}>Изход</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -161,16 +180,16 @@ const ProfileScreen: React.FC = () => {
     <>
       <View style={styles.profileSection}>
         <LinearGradient
-          colors={['#E8F5E9', '#C8E6C9']}
+          colors={['rgba(59, 89, 152, 0.2)', 'rgba(74, 108, 179, 0.3)']}
           style={styles.profileBackground}
         >
           <View style={styles.profileContent}>
             <View style={styles.avatarContainer}>
-              <Ionicons name="person-circle" size={60} color="#4CAF50" />
+              <Ionicons name="person-circle" size={60} color={ChemistryTheme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.username}>Guest User</Text>
-              <Text style={styles.reportCount}>Viewing community reports</Text>
+              <Text style={styles.username}>Гост</Text>
+              <Text style={styles.reportCount}>Преглеждате доклади на общността</Text>
             </View>
           </View>
         </LinearGradient>
@@ -178,24 +197,24 @@ const ProfileScreen: React.FC = () => {
       
       <View style={styles.guestMessage}>
         <Text style={styles.guestMessageText}>
-          Create an account to track your reports and help keep our environment clean!
+          Създайте профил, за да следите вашите доклади и да помогнете за по-чиста околна среда!
         </Text>
         <TouchableOpacity 
           style={styles.loginButton}
           onPress={() => navigation.navigate('Welcome')}
         >
           <LinearGradient
-            colors={['#66BB6A', '#4CAF50']}
+            colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
             style={styles.gradientButton}
           >
-            <Text style={styles.buttonText}>Login / Register</Text>
+            <Text style={styles.buttonText}>Вход / Регистрация</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
 
       <View style={styles.divider} />
       
-      <Text style={styles.sectionTitle}>Community Reports</Text>
+      <Text style={styles.sectionTitle}>Доклади на общността</Text>
     </>
   );
 
@@ -203,16 +222,16 @@ const ProfileScreen: React.FC = () => {
     <>
       <View style={styles.profileSection}>
         <LinearGradient
-          colors={['#E8F5E9', '#C8E6C9']}
+          colors={['rgba(59, 89, 152, 0.2)', 'rgba(74, 108, 179, 0.3)']}
           style={styles.profileBackground}
         >
           <View style={styles.profileContent}>
             <View style={styles.avatarContainer}>
-              <Ionicons name="person-circle" size={60} color="#4CAF50" />
+              <Ionicons name="person-circle" size={60} color={ChemistryTheme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.username}>{user?.username || 'User'}</Text>
-              <Text style={styles.reportCount}>Welcome to the community!</Text>
+              <Text style={styles.username}>{user?.username || 'Потребител'}</Text>
+              <Text style={styles.reportCount}>Добре дошли в общността!</Text>
               {renderLogoutButton()}
             </View>
           </View>
@@ -221,7 +240,7 @@ const ProfileScreen: React.FC = () => {
 
       <View style={styles.divider} />
 
-      <Text style={styles.sectionTitle}>Community Reports</Text>
+      <Text style={styles.sectionTitle}>Доклади на общността</Text>
     </>
   );
 
@@ -229,16 +248,16 @@ const ProfileScreen: React.FC = () => {
     <>
       <View style={styles.profileSection}>
         <LinearGradient
-          colors={['#E8F5E9', '#C8E6C9']}
+          colors={['rgba(59, 89, 152, 0.2)', 'rgba(74, 108, 179, 0.3)']}
           style={styles.profileBackground}
         >
           <View style={styles.profileContent}>
             <View style={styles.avatarContainer}>
-              <Ionicons name="shield-checkmark" size={60} color="#4CAF50" />
+              <Ionicons name="shield-checkmark" size={60} color={ChemistryTheme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.username}>{user?.username || 'Admin'}</Text>
-              <Text style={styles.adminBadge}>Administrator</Text>
+              <Text style={styles.adminBadge}>Администратор</Text>
               {renderLogoutButton()}
             </View>
           </View>
@@ -252,25 +271,25 @@ const ProfileScreen: React.FC = () => {
           style={[styles.filterButton, activeFilter === '' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('')}
         >
-          <Text style={activeFilter === '' ? styles.activeFilterText : styles.filterText}>All</Text>
+          <Text style={activeFilter === '' ? styles.activeFilterText : styles.filterText}>Всички</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'REPORTED' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('REPORTED')}
         >
-          <Text style={activeFilter === 'REPORTED' ? styles.activeFilterText : styles.filterText}>Pending</Text>
+          <Text style={activeFilter === 'REPORTED' ? styles.activeFilterText : styles.filterText}>Докладвани</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'IN_PROGRESS' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('IN_PROGRESS')}
         >
-          <Text style={activeFilter === 'IN_PROGRESS' ? styles.activeFilterText : styles.filterText}>In Progress</Text>
+          <Text style={activeFilter === 'IN_PROGRESS' ? styles.activeFilterText : styles.filterText}>В процес</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'CLEANED' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('CLEANED')}
         >
-          <Text style={activeFilter === 'CLEANED' ? styles.activeFilterText : styles.filterText}>Cleaned</Text>
+          <Text style={activeFilter === 'CLEANED' ? styles.activeFilterText : styles.filterText}>Почистени</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -279,7 +298,7 @@ const ProfileScreen: React.FC = () => {
   const renderReportCard = (report: TrashReport) => {
     // Use the status or default to 'REPORTED'
     const status = (report.status || 'REPORTED').toUpperCase();
-    const statusStyle = getStatusColor(status);
+    const statusStyle = getStatusColors(status);
     
     return (
       <TouchableOpacity 
@@ -288,10 +307,10 @@ const ProfileScreen: React.FC = () => {
         onPress={() => handleReportPress(report)}
       >
         <View style={styles.reportHeader}>
-          <Text style={styles.reportTitle}>Report #{report.id}</Text>
+          <Text style={styles.reportTitle}>Доклад №{report.id}</Text>
           <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
             <Text style={[styles.statusText, { color: statusStyle.text }]}>
-              {status.replace('_', ' ')}
+              {getStatusLabel(status)}
             </Text>
           </View>
         </View>
@@ -311,10 +330,10 @@ const ProfileScreen: React.FC = () => {
               </Text>
             )}
             <Text style={styles.reportLocation}>
-              Lat: {typeof report.latitude === 'string' 
+              Ширина: {typeof report.latitude === 'string' 
                     ? parseFloat(report.latitude).toFixed(4) 
                     : report.latitude.toFixed(4)}, 
-              Lon: {typeof report.longitude === 'string'
+              Дължина: {typeof report.longitude === 'string'
                     ? parseFloat(report.longitude).toFixed(4)
                     : report.longitude.toFixed(4)}
             </Text>
@@ -328,7 +347,7 @@ const ProfileScreen: React.FC = () => {
                 style={styles.actionButton}
                 onPress={() => handleStatusChange(report.id, 'IN_PROGRESS')}
               >
-                <Text style={styles.actionButtonText}>Mark In Progress</Text>
+                <Text style={styles.actionButtonText}>Маркирай като в процес</Text>
               </TouchableOpacity>
             )}
             {status !== 'CLEANED' && (
@@ -336,7 +355,7 @@ const ProfileScreen: React.FC = () => {
                 style={[styles.actionButton, styles.cleanedButton]}
                 onPress={() => handleStatusChange(report.id, 'CLEANED')}
               >
-                <Text style={styles.actionButtonText}>Mark as Cleaned</Text>
+                <Text style={styles.actionButtonText}>Маркирай като почистено</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -351,7 +370,7 @@ const ProfileScreen: React.FC = () => {
       
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          {userRole === 'admin' ? 'Admin Panel' : userRole === 'user' ? 'My Profile' : 'Profile'}
+          {userRole === 'admin' ? 'Админ панел' : userRole === 'user' ? 'Моят профил' : 'Профил'}
         </Text>
       </View>
       
@@ -368,25 +387,25 @@ const ProfileScreen: React.FC = () => {
         
         {loading && !refreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4CAF50" />
-            <Text style={styles.loadingText}>Loading reports...</Text>
+            <ActivityIndicator size="large" color={ChemistryTheme.colors.primary} />
+            <Text style={styles.loadingText}>Зареждане на доклади...</Text>
           </View>
         ) : filteredReports.length > 0 ? (
           filteredReports.map(report => renderReportCard(report))
         ) : (
           <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={60} color="#BDBDBD" />
-            <Text style={styles.emptyText}>No reports found</Text>
+            <Text style={styles.emptyText}>Няма намерени доклади</Text>
             {userRole !== 'guest' && (
               <TouchableOpacity 
                 style={styles.newReportButton}
                 onPress={() => navigation.navigate('Camera')}
               >
                 <LinearGradient
-                  colors={['#66BB6A', '#4CAF50']}
+                  colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                   style={styles.gradientButton}
                 >
-                  <Text style={styles.newReportButtonText}>Create New Report</Text>
+                  <Text style={styles.newReportButtonText}>Създай нов доклад</Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
@@ -457,7 +476,7 @@ const styles = StyleSheet.create({
   },
   adminBadge: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontWeight: 'bold',
     marginBottom: 8,
   },
@@ -528,14 +547,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   activeFilterButton: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#f2f2f2',
   },
   filterText: {
     color: '#757575',
     fontSize: 14,
   },
   activeFilterText: {
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -629,7 +648,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cleanedButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: ChemistryTheme.colors.primary,
   },
   actionButtonText: {
     color: 'white',
@@ -675,4 +694,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileScreen; 
+export default ProfileScreen;

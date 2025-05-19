@@ -19,8 +19,11 @@ import { getTrashReports, TrashReport } from '../services/api';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
-import TrashIcon from '../../assets/trash-icon';
 import BottomNavigation from '../components/BottomNavigation';
+import { ChemistryTheme } from '../theme/theme';
+import SchoolLogoIcon from '../../assets/school-logo-icon';
+import ChemistryIcon from '../../assets/chemistry-icon';
+import EcoIcon from '../../assets/eco-icon';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
@@ -45,8 +48,8 @@ const HomeScreen: React.FC = () => {
       return (
         <View style={styles.noReportsContainer}>
           <View style={styles.glassCard}>
-            <Text style={styles.noReportsText}>No trash reports yet</Text>
-            <Text style={styles.noReportsSubtext}>Be the first to report trash in your area!</Text>
+            <Text style={styles.noReportsText}>Няма доклади за околната среда</Text>
+            <Text style={styles.noReportsSubtext}>Бъдете първият, който ще докладва за проблеми във вашия район!</Text>
           </View>
         </View>
       );
@@ -66,7 +69,10 @@ const HomeScreen: React.FC = () => {
               onPress={() => handleReportPress(report)}
             >
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.7)']}
+                colors={[
+                  'rgba(255, 255, 255, 0.9)', 
+                  'rgba(245, 248, 255, 0.8)'
+                ]}
                 style={styles.reportCard}
               >
                 {imageUrl && (
@@ -82,7 +88,7 @@ const HomeScreen: React.FC = () => {
                   </View>
                 )}
                 <View style={styles.reportInfo}>
-                  <Text style={styles.reportTitle}>Trash Report #{report?.id || 'New'}</Text>
+                  <Text style={styles.reportTitle}>Еко Доклад #{report?.id || 'Нов'}</Text>
                   {report?.description && (
                     <Text style={styles.reportDescription} numberOfLines={2}>
                       {report.description}
@@ -91,25 +97,25 @@ const HomeScreen: React.FC = () => {
                   <View style={
                     [styles.statusBadge, 
                       { backgroundColor: 
-                        status === 'REPORTED' ? 'rgba(255, 152, 0, 0.2)' : 
-                        status === 'IN_PROGRESS' ? 'rgba(33, 150, 243, 0.2)' : 
-                        'rgba(76, 175, 80, 0.2)'
+                        status === 'REPORTED' ? 'rgba(74, 108, 179, 0.2)' : 
+                        status === 'IN_PROGRESS' ? 'rgba(59, 89, 152, 0.2)' : 
+                        'rgba(74, 144, 114, 0.2)'
                       }
                     ]
                   }>
                     <Text style={
                       [styles.statusText, 
                         { color: 
-                          status === 'REPORTED' ? '#EF6C00' : 
-                          status === 'IN_PROGRESS' ? '#1976D2' : 
-                          '#2E7D32'
+                          status === 'REPORTED' ? ChemistryTheme.colors.secondary : 
+                          status === 'IN_PROGRESS' ? ChemistryTheme.colors.primary : 
+                          ChemistryTheme.colors.success
                         }
                       ]
                     }>
                       {(status || '').replace('_', ' ')}
                     </Text>
                   </View>
-                  <Text style={styles.viewDetails}>Tap to view details</Text>
+                  <Text style={styles.viewDetails}>Докоснете за подробности</Text>
                 </View>
               </LinearGradient>
             </TouchableOpacity>
@@ -127,7 +133,7 @@ const HomeScreen: React.FC = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching reports:', err);
-      setError('Failed to load trash reports. Please try again.');
+      setError('Грешка при зареждане на доклади');
       setReports([]);
     } finally {
       setLoading(false);
@@ -159,7 +165,7 @@ const HomeScreen: React.FC = () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     
     if (permissionResult.granted === false) {
-      Alert.alert('Permission required', 'You need to grant camera permission to report trash.');
+      Alert.alert('Permission required', 'You need to grant camera permission to report environmental issues.');
       return;
     }
     
@@ -191,11 +197,14 @@ const HomeScreen: React.FC = () => {
     return (
       <View style={styles.loadingContainer}>
         <LinearGradient
-          colors={['rgba(46, 125, 50, 0.7)', 'rgba(76, 175, 80, 0.7)']}
+          colors={[
+            'rgba(59, 89, 152, 0.7)', 
+            'rgba(74, 108, 179, 0.7)'
+          ]}
           style={styles.loadingGradient}
         >
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={styles.loadingText}>Loading trash reports...</Text>
+          <Text style={styles.loadingText}>Зареждане на доклади...</Text>
         </LinearGradient>
       </View>
     );
@@ -206,15 +215,15 @@ const HomeScreen: React.FC = () => {
       <StatusBar style="dark" />
       
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.95)', 'rgba(255, 255, 255, 0.85)']}
+        colors={[ChemistryTheme.colors.background, 'rgba(255, 255, 255, 0.95)']}
         style={styles.headerContainer}
       >
         <View style={styles.headerContent}>
           <View style={styles.appNameContainer}>
-            <TrashIcon width={28} height={28} color="#2E7D32" />
-            <Text style={styles.appName}>TrashSpotter</Text>
+            <SchoolLogoIcon size={32} />
+            <Text style={styles.appName}>ХимиЕко</Text>
           </View>
-          <Text style={styles.headerText}>Help keep our environment clean</Text>
+          <Text style={styles.headerText}>Химия за устойчива околна среда</Text>
         </View>
       </LinearGradient>
 
@@ -222,7 +231,11 @@ const HomeScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4CAF50']} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            colors={[ChemistryTheme.colors.primary]} 
+          />
         }
       >
         <View style={styles.actionsContainer}>
@@ -231,13 +244,13 @@ const HomeScreen: React.FC = () => {
             onPress={handleAddReport}
           >
             <LinearGradient
-              colors={['#66BB6A', '#4CAF50']}
+              colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
               style={styles.actionButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <Text style={styles.actionButtonIcon}>+</Text>
-              <Text style={styles.actionButtonText}>Report Trash</Text>
+              <Text style={styles.actionButtonText}>Use Camera</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -246,41 +259,29 @@ const HomeScreen: React.FC = () => {
             onPress={handleViewMap}
           >
             <LinearGradient
-              colors={['rgba(38, 50, 56, 0.8)', 'rgba(55, 71, 79, 0.8)']}
+              colors={[ChemistryTheme.colors.success, 'rgba(74, 144, 114, 0.8)']}
               style={styles.actionButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.actionButtonIcon}>🗺️</Text>
+              <EcoIcon width={24} height={24} color="#fff" />
               <Text style={styles.actionButtonText}>View Map</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {error ? (
-          <View style={styles.errorContainer}>
-            <View style={styles.glassCard}>
-              <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity 
-                style={styles.retryButton} 
-                onPress={fetchReports}
-              >
-                <LinearGradient
-                  colors={['#66BB6A', '#4CAF50']}
-                  style={styles.retryButtonGradient}
-                >
-                  <Text style={styles.retryButtonText}>Retry</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionTitleContainer}>
+            <ChemistryIcon width={24} height={24} color={ChemistryTheme.colors.primary} />
+            <Text style={styles.sectionTitle}>Доклади за околната среда</Text>
           </View>
-        ) : (
-          <>
-            <Text style={styles.sectionTitle}>Recent Reports</Text>
-            {renderReports()}
-          </>
-        )}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
+
+        {renderReports()}
       </ScrollView>
+
+      <BottomNavigation currentScreen="Camera" />
     </SafeAreaView>
   );
 };
@@ -288,140 +289,169 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(245, 245, 245, 0.7)',
-  },
-  loadingGradient: {
-    paddingHorizontal: 40,
-    paddingVertical: 30,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
+    backgroundColor: ChemistryTheme.colors.background,
   },
   headerContainer: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 4,
-    borderBottomWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    width: '100%',
+    paddingTop: Platform.OS === 'ios' ? 10 : 40,
+    paddingBottom: 10,
+    borderBottomRightRadius: 15,
+    borderBottomLeftRadius: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 3,
+    elevation: 3,
     zIndex: 10,
   },
   headerContent: {
-    alignItems: 'center',
+    paddingHorizontal: 20,
   },
   appNameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   appName: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#2E7D32',
-    marginLeft: 10,
+    marginLeft: 8,
+    color: ChemistryTheme.colors.primary,
   },
   headerText: {
     fontSize: 14,
-    color: '#616161',
+    color: ChemistryTheme.colors.text,
+    opacity: 0.8,
+    marginTop: 4,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: 100, // Space for bottom navigation
   },
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
   actionButton: {
     flex: 1,
-    maxWidth: '48%',
-    borderRadius: 16,
+    height: 60,
+    marginHorizontal: 6,
+    borderRadius: 12,
     overflow: 'hidden',
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   actionButtonGradient: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    height: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   actionButtonIcon: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    color: 'white',
+    marginRight: 8,
   },
   actionButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  sectionHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2E7D32',
-    marginHorizontal: 16,
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+    color: ChemistryTheme.colors.primary,
+  },
+  errorText: {
+    color: ChemistryTheme.colors.error,
+    marginTop: 6,
+    fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: ChemistryTheme.colors.background,
+  },
+  loadingGradient: {
+    width: '80%',
+    padding: 30,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    color: 'white',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  noReportsContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  noReportsText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: ChemistryTheme.colors.primary,
+    marginBottom: 8,
+  },
+  noReportsSubtext: {
+    fontSize: 14,
+    color: ChemistryTheme.colors.text,
+    opacity: 0.7,
+    textAlign: 'center',
   },
   reportsContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
   },
   reportCardContainer: {
-    marginBottom: 16,
-    borderRadius: 16,
+    marginBottom: 15,
+    borderRadius: 12,
     overflow: 'hidden',
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   reportCard: {
-    borderRadius: 16,
+    padding: 0,
+    borderRadius: 12,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
   },
   reportImageContainer: {
-    height: 150,
+    height: 160,
     width: '100%',
     position: 'relative',
   },
@@ -430,100 +460,41 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    height: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 40,
   },
   reportInfo: {
     padding: 16,
   },
   reportTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E7D32',
+    fontSize: 17,
+    fontWeight: '600',
     marginBottom: 8,
+    color: ChemistryTheme.colors.primary,
   },
   reportDescription: {
     fontSize: 14,
-    color: '#616161',
-    marginBottom: 8,
+    color: ChemistryTheme.colors.text,
+    marginBottom: 12,
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
     alignSelf: 'flex-start',
     marginBottom: 8,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   viewDetails: {
-    fontSize: 12,
-    color: '#4CAF50',
-    fontStyle: 'italic',
-    textAlign: 'right',
-  },
-  noReportsContainer: {
-    paddingHorizontal: 16,
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  glassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 340,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-  },
-  noReportsText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#616161',
-    marginBottom: 8,
-  },
-  noReportsSubtext: {
-    fontSize: 14,
-    color: '#757575',
-    textAlign: 'center',
-  },
-  errorContainer: {
-    paddingHorizontal: 16,
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#D32F2F',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  retryButton: {
-    borderRadius: 25,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  retryButtonGradient: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 13,
+    color: ChemistryTheme.colors.secondary,
+    fontWeight: '500',
   },
 });
 

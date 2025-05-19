@@ -21,6 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavigation from '../components/BottomNavigation';
 import { useAuth } from '../contexts/AuthContext';
+import { ChemistryTheme } from '../theme/theme';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -32,16 +33,10 @@ const CAMERA_TYPES = {
   FRONT: 'front'
 };
 
-const FLASH_MODES = {
-  OFF: 'off',
-  ON: 'on'
-};
-
 const CameraScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [cameraType, setCameraType] = useState(CAMERA_TYPES.BACK);
-  const [flash, setFlash] = useState(FLASH_MODES.OFF);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
@@ -64,16 +59,16 @@ const CameraScreen: React.FC = () => {
         // Also request media library permission for gallery access
         const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (galleryStatus.status !== 'granted') {
-          Alert.alert('Permission needed', 'We need your permission to access your photo gallery');
+          Alert.alert('Необходимо разрешение', 'Трябва да ни дадете достъп до вашата галерия');
         }
       } else {
         setHasPermission(false);
-        setPermissionError('Camera permission was denied. Please enable it in your device settings.');
+        setPermissionError('Разрешението за камера беше отказано. Моля, активирайте го в настройките на устройството.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in permission request flow:', error);
       setHasPermission(false);
-      setPermissionError(`Error requesting camera permissions: ${error.message || 'Unknown error'}`);
+      setPermissionError(`Грешка при искане на разрешения за камера: ${error.message || 'Неизвестна грешка'}`);
     }
   };
 
@@ -88,7 +83,7 @@ const CameraScreen: React.FC = () => {
       await Linking.openSettings();
     } catch (error) {
       console.error('Could not open settings:', error);
-      Alert.alert('Error', 'Could not open settings. Please manually enable camera access in your device settings.');
+      Alert.alert('Грешка', 'Не може да се отворят настройки. Моля, активирайте достъпа до камера ръчно в настройките на устройството.');
     }
   };
 
@@ -108,7 +103,7 @@ const CameraScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error taking picture:', error);
-      Alert.alert('Error', 'Failed to take picture. Please try again.');
+      Alert.alert('Грешка', 'Неуспешно заснемане на снимка. Моля, опитайте отново.');
     } finally {
       setIsCapturing(false);
     }
@@ -117,14 +112,6 @@ const CameraScreen: React.FC = () => {
   const toggleCameraType = () => {
     setCameraType(current => 
       current === CAMERA_TYPES.BACK ? CAMERA_TYPES.FRONT : CAMERA_TYPES.BACK
-    );
-  };
-
-  const toggleFlash = () => {
-    setFlash(current => 
-      current === FLASH_MODES.OFF 
-        ? FLASH_MODES.ON 
-        : FLASH_MODES.OFF
     );
   };
 
@@ -142,7 +129,7 @@ const CameraScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to select image from gallery');
+      Alert.alert('Грешка', 'Неуспешен избор на изображение от галерията');
     }
   };
 
@@ -150,10 +137,10 @@ const CameraScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#4CAF50', '#2E7D32']}
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.accent]}
           style={styles.loadingContainer}
         >
-          <Text style={styles.loadingText}>Requesting camera permission...</Text>
+          <Text style={styles.loadingText}>Искане за разрешение за камера...</Text>
         </LinearGradient>
       </View>
     );
@@ -163,12 +150,12 @@ const CameraScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#4CAF50', '#2E7D32']}
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.accent]}
           style={styles.loadingContainer}
         >
-          <Text style={styles.noAccess}>No access to camera</Text>
+          <Text style={styles.noAccess}>Няма достъп до камера</Text>
           <Text style={styles.permissionText}>
-            We need camera access to allow you to take photos of trash.
+            Имаме нужда от достъп до камерата, за да правите снимки за екологични доклади.
           </Text>
           
           {permissionError && (
@@ -182,14 +169,14 @@ const CameraScreen: React.FC = () => {
               style={[styles.permissionButton, styles.secondaryButton]} 
               onPress={() => navigation.navigate('Home')}
             >
-              <Text style={styles.secondaryButtonText}>Go Back</Text>
+              <Text style={styles.secondaryButtonText}>Назад</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
               style={styles.permissionButton} 
               onPress={requestCameraPermission}
             >
-              <Text style={styles.permissionButtonText}>Retry</Text>
+              <Text style={styles.permissionButtonText}>Опитай отново</Text>
             </TouchableOpacity>
           </View>
           
@@ -197,7 +184,7 @@ const CameraScreen: React.FC = () => {
             style={[styles.permissionButton, styles.settingsButton]} 
             onPress={openAppSettings}
           >
-            <Text style={styles.permissionButtonText}>Open Settings</Text>
+            <Text style={styles.permissionButtonText}>Отвори Настройки</Text>
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -212,12 +199,11 @@ const CameraScreen: React.FC = () => {
       {/* Camera placeholder */}
       <View style={styles.camera}>
         <LinearGradient
-          colors={['rgba(0, 0, 0, 0.7)', 'rgba(46, 125, 50, 0.4)']}
+          colors={['rgba(255, 255, 255, 0.7)', 'rgba(0, 166, 255, 0.4)']}
           style={styles.cameraPlaceholder}
         >
           <Ionicons name="camera" size={50} color="rgba(255, 255, 255, 0.7)" />
-          <Text style={styles.cameraText}>Camera Ready</Text>
-          <Text style={styles.cameraSubtext}>Tap the button below to take a photo</Text>
+
         </LinearGradient>
       </View>
       
@@ -231,15 +217,7 @@ const CameraScreen: React.FC = () => {
             <Ionicons name="person-circle" size={28} color="white" />
           </TouchableOpacity>
           
-          <Text style={styles.headerTitle}>TrashTracker</Text>
-          
-          <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
-            <Ionicons
-              name={flash === FLASH_MODES.OFF ? 'flash-off' : 'flash'}
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Еко Доклади</Text>
         </View>
         
         {/* Bottom controls - moved up */}
@@ -308,12 +286,12 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 + 10 : 10,
     paddingBottom: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(0, 0, 0, 0.0)',
   },
   headerTitle: {
     color: 'white',
@@ -322,6 +300,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    marginLeft: 15,
   },
   iconButton: {
     width: 44,
@@ -342,7 +321,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: ChemistryTheme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
@@ -418,7 +397,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   permissionButton: {
-    backgroundColor: 'white',
+    backgroundColor: ChemistryTheme.colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -436,7 +415,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   permissionButtonText: {
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontSize: 16,
     fontWeight: 'bold',
   },

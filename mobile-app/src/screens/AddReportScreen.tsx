@@ -36,7 +36,7 @@ const AddReportScreen: React.FC = () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert('Permission denied', 'Location permission is required');
+          Alert.alert('Разрешение отказано', 'Необходимо е разрешение за местоположение');
           setFetchingLocation(false);
           return;
         }
@@ -48,8 +48,8 @@ const AddReportScreen: React.FC = () => {
         });
         setFetchingLocation(false);
       } catch (error) {
-        console.error('Error getting location:', error);
-        Alert.alert('Error', 'Failed to get your location');
+        console.error('Грешка при получаване на местоположение:', error);
+        Alert.alert('Грешка', 'Неуспешно получаване на местоположение');
         setFetchingLocation(false);
       }
     };
@@ -59,17 +59,17 @@ const AddReportScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!location) {
-      Alert.alert('Missing location', 'Please wait for your location to be determined');
+      Alert.alert('Липсва местоположение', 'Моля изчакайте за определяне на местоположението');
       return;
     }
 
     if (description.trim() === '') {
-      Alert.alert('Missing description', 'Please provide a description of the trash');
+      Alert.alert('Липсва описание', 'Моля предоставете описание на боклука');
       return;
     }
 
     if (!imageUri) {
-      Alert.alert('Missing image', 'No image was selected. Please go back and try again.');
+      Alert.alert('Липсва изображение', 'Не е избрано изображение. Моля върнете се и опитайте отново.');
       return;
     }
 
@@ -102,8 +102,8 @@ const AddReportScreen: React.FC = () => {
       
       setLoading(false);
       Alert.alert(
-        'Success',
-        'Your trash report has been submitted successfully',
+        'Успех',
+        'Вашият доклад е изпратен успешно',
         [
           { 
             text: 'OK', 
@@ -119,12 +119,12 @@ const AddReportScreen: React.FC = () => {
       setLoading(false);
       
       // Show more detailed error message
-      let errorMessage = 'Failed to submit your report. Please try again.';
+      let errorMessage = 'Неуспешно изпращане на доклад. Моля опитайте отново.';
       if (error instanceof Error) {
         errorMessage += '\n\nError details: ' + error.message;
       }
       
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Грешка', errorMessage);
     }
   };
 
@@ -137,7 +137,7 @@ const AddReportScreen: React.FC = () => {
         >
           <FontAwesome name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Report Trash</Text>
+        <Text style={styles.headerTitle}>Нов доклад</Text>
       </View>
 
       <View style={styles.imageContainer}>
@@ -145,26 +145,26 @@ const AddReportScreen: React.FC = () => {
       </View>
 
       <View style={styles.formContainer}>
-        <Text style={styles.label}>Description</Text>
+        <Text style={styles.label}>Описание</Text>
         <TextInput
           style={styles.input}
-          placeholder="Describe the trash and location"
+          placeholder="Описание на боклука и местоположение"
           multiline
           numberOfLines={4}
           value={description}
           onChangeText={setDescription}
         />
 
-        <Text style={styles.label}>Location</Text>
+        <Text style={styles.label}>Местоположение</Text>
         <View style={styles.locationContainer}>
           {fetchingLocation ? (
             <ActivityIndicator size="small" color="#0096FF" />
           ) : location ? (
             <Text style={styles.locationText}>
-              {`Lat: ${location.latitude.toFixed(6)}, Long: ${location.longitude.toFixed(6)}`}
+              {`Широчина: ${location.latitude.toFixed(6)}, Дължина: ${location.longitude.toFixed(6)}`}
             </Text>
           ) : (
-            <Text style={styles.errorText}>Failed to get location</Text>
+            <Text style={styles.errorText}>Грешка при създаване на доклад</Text>
           )}
         </View>
 
@@ -176,7 +176,7 @@ const AddReportScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit Report</Text>
+            <Text style={styles.submitButtonText}>Изпрати доклад</Text>
           )}
         </TouchableOpacity>
       </View>

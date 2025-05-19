@@ -22,6 +22,7 @@ import MapView, { Marker } from 'react-native-maps';
 import TrashIcon from '../../assets/trash-icon';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ChemistryTheme } from '../theme/theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -47,7 +48,7 @@ const DetailsScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <LinearGradient
-          colors={['rgba(46, 125, 50, 0.95)', 'rgba(46, 125, 50, 0.85)']}
+          colors={['rgba(59, 89, 152, 0.95)', 'rgba(59, 89, 152, 0.85)']}
           style={styles.header}
         >
           <TouchableOpacity 
@@ -58,21 +59,21 @@ const DetailsScreen: React.FC = () => {
               <Text style={styles.backButtonText}>←</Text>
             </View>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Error</Text>
+          <Text style={styles.headerTitle}>Грешка</Text>
           <View style={styles.shareButton} />
         </LinearGradient>
         <View style={styles.errorContainer}>
           <View style={styles.glassCard}>
-            <Text style={styles.errorText}>Report data is invalid or missing</Text>
+            <Text style={styles.errorText}>Данните за доклада са невалидни или липсват</Text>
             <TouchableOpacity 
               style={styles.backToMapButton}
               onPress={() => navigation.navigate('Map')}
             >
               <LinearGradient
-                colors={['#66BB6A', '#4CAF50']}
+                colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                 style={styles.backToMapButtonGradient}
               >
-                <Text style={styles.backToMapText}>Back to Map</Text>
+                <Text style={styles.backToMapText}>Обратно към Картата</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -82,14 +83,14 @@ const DetailsScreen: React.FC = () => {
   }
 
   const formattedDate = report.createdAt 
-    ? new Date(report.createdAt).toLocaleDateString('en-US', {
+    ? new Date(report.createdAt).toLocaleDateString('bg-BG', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
       })
-    : 'Unknown date';
+    : 'Неизвестна дата';
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -99,7 +100,7 @@ const DetailsScreen: React.FC = () => {
     try {
       const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
       const latLng = `${latitude},${longitude}`;
-      const label = `Trash Report #${report.id}`;
+      const label = `Еко Доклад #${report.id}`;
       const url = Platform.select({
         ios: `${scheme}${label}@${latLng}`,
         android: `${scheme}${latLng}(${label})`
@@ -110,19 +111,19 @@ const DetailsScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error opening maps:', error);
-      Alert.alert('Error', 'Could not open maps application');
+      Alert.alert('Грешка', 'Не може да се отвори приложението за карти');
     }
   };
 
   const handleShare = async () => {
     try {
       await Share.share({
-        title: `ECCC Trash Report #${report.id}`,
-        message: `Check out this trash report at https://maps.google.com/?q=${latitude},${longitude}. ${report.description || ''}`
+        title: `Еко Доклад #${report.id}`,
+        message: `Вижте този еко доклад на https://maps.google.com/?q=${latitude},${longitude}. ${report.description || ''}`
       });
     } catch (error) {
       console.error('Error sharing:', error);
-      Alert.alert('Error', 'Could not share this report');
+      Alert.alert('Грешка', 'Не може да се сподели този доклад');
     }
   };
 
@@ -131,7 +132,7 @@ const DetailsScreen: React.FC = () => {
       <StatusBar style="light" />
       
       <LinearGradient
-        colors={['rgba(46, 125, 50, 0.95)', 'rgba(46, 125, 50, 0.85)']}
+        colors={['rgba(59, 89, 152, 0.95)', 'rgba(59, 89, 152, 0.85)']}
         style={styles.header}
       >
         <TouchableOpacity 
@@ -142,13 +143,13 @@ const DetailsScreen: React.FC = () => {
             <Text style={styles.backButtonText}>←</Text>
           </View>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Trash Report Details</Text>
+        <Text style={styles.headerTitle}>Детайли за доклада</Text>
         <TouchableOpacity 
           style={styles.shareButton} 
           onPress={handleShare}
         >
           <View style={styles.shareButtonInner}>
-            <Text style={styles.shareButtonText}>Share</Text>
+            <Text style={styles.shareButtonText}>Сподели</Text>
           </View>
         </TouchableOpacity>
       </LinearGradient>
@@ -167,37 +168,37 @@ const DetailsScreen: React.FC = () => {
             />
           ) : (
             <View style={[styles.photo, styles.noPhotoContainer]}>
-              <Text style={styles.noPhotoText}>No image available</Text>
+              <Text style={styles.noPhotoText}>Няма налична снимка</Text>
             </View>
           )}
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.7)']}
             style={styles.photoOverlay}
           >
-            <Text style={styles.photoTitle}>Report #{report.id}</Text>
+            <Text style={styles.photoTitle}>Доклад #{report.id}</Text>
           </LinearGradient>
         </View>
         
         <View style={styles.infoContainer}>
           <View style={styles.glassCard}>
-            <Text style={styles.title}>Report #{report.id}</Text>
-            <Text style={styles.date}>Reported on {formattedDate}</Text>
+            <Text style={styles.title}>Доклад #{report.id}</Text>
+            <Text style={styles.date}>Докладвано на {formattedDate}</Text>
             
             {report.description && (
               <View style={styles.descriptionContainer}>
-                <Text style={styles.sectionTitle}>Description</Text>
+                <Text style={styles.sectionTitle}>Описание</Text>
                 <Text style={styles.description}>{report.description}</Text>
               </View>
             )}
           </View>
           
           <View style={[styles.glassCard, styles.locationCard]}>
-            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={styles.sectionTitle}>Местоположение</Text>
             <Text style={styles.locationText}>
-              Latitude: {latitude.toFixed(6)}
+              Географска ширина: {latitude.toFixed(6)}
             </Text>
             <Text style={styles.locationText}>
-              Longitude: {longitude.toFixed(6)}
+              Географска дължина: {longitude.toFixed(6)}
             </Text>
             
             <TouchableOpacity 
@@ -205,10 +206,10 @@ const DetailsScreen: React.FC = () => {
               onPress={handleOpenInMaps}
             >
               <LinearGradient
-                colors={['#66BB6A', '#4CAF50']}
+                colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                 style={styles.openMapsButtonGradient}
               >
-                <Text style={styles.openMapsButtonText}>Open in Maps</Text>
+                <Text style={styles.openMapsButtonText}>Отвори в Карти</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -235,10 +236,10 @@ const DetailsScreen: React.FC = () => {
               >
                 <View style={styles.markerContainer}>
                   <LinearGradient
-                    colors={['#EF5350', '#D32F2F']}
+                    colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                     style={styles.markerGradient}
                   >
-                    <TrashIcon width={20} height={20} color="#FFF" />
+                    <TrashIcon width={20} height={20} color={ChemistryTheme.colors.primary} />
                   </LinearGradient>
                 </View>
               </Marker>
@@ -250,10 +251,10 @@ const DetailsScreen: React.FC = () => {
             onPress={() => navigation.navigate('Map')}
           >
             <LinearGradient
-              colors={['#66BB6A', '#4CAF50']}
+              colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
               style={styles.backToMapButtonGradient}
             >
-              <Text style={styles.backToMapText}>Back to Map</Text>
+              <Text style={styles.backToMapText}>Обратно към Картата</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 8,
   },
   date: {
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 12,
   },
   description: {

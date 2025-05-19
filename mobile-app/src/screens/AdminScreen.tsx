@@ -20,14 +20,22 @@ import { getTrashReports, updateTrashReportStatus, TrashReport } from '../servic
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import BottomNavigation from '../components/BottomNavigation';
+import { ChemistryTheme } from '../theme/theme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Admin'>;
 
 const statusOptions = [
-  { label: 'Reported', value: 'REPORTED' },
-  { label: 'In Progress', value: 'IN_PROGRESS' },
-  { label: 'Cleaned', value: 'CLEANED' },
+  { label: 'Докладвано', value: 'REPORTED' },
+  { label: 'В процес', value: 'IN_PROGRESS' },
+  { label: 'Почистено', value: 'CLEANED' },
+  { label: 'Проверено', value: 'VERIFIED' }
 ];
+
+// Helper function to get status label
+const getStatusLabel = (status: string) => {
+  const option = statusOptions.find(opt => opt.value === status);
+  return option ? option.label : 'Докладвано';
+};
 
 const AdminScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -62,7 +70,7 @@ const AdminScreen: React.FC = () => {
       setFilteredReports(data);
     } catch (error) {
       console.error('Error fetching reports:', error);
-      Alert.alert('Error', 'Failed to load reports');
+      Alert.alert('Грешка', 'Неуспешно зареждане на докладите');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -99,36 +107,43 @@ const AdminScreen: React.FC = () => {
       });
       
       setReports(updatedReports);
-      Alert.alert('Success', 'Report status updated successfully');
+      Alert.alert('Успешно', 'Статусът на доклада е обновен успешно');
       setModalVisible(false);
     } catch (error) {
       console.error('Error updating report status:', error);
-      Alert.alert('Error', 'Failed to update report status');
+      Alert.alert('Грешка', 'Неуспешно обновяване на статуса');
     } finally {
       setUpdating(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'REPORTED':
-        return { bg: 'rgba(255, 152, 0, 0.2)', text: '#EF6C00' };
-      case 'IN_PROGRESS':
-        return { bg: 'rgba(33, 150, 243, 0.2)', text: '#1976D2' };
+  const getStatusColors = (status: string) => {
+    switch (status) {
       case 'CLEANED':
-        return { bg: 'rgba(76, 175, 80, 0.2)', text: '#2E7D32' };
+        return { bg: 'rgba(59, 89, 152, 0.2)', text: ChemistryTheme.colors.primary };
+      case 'IN_PROGRESS':
+        return { bg: 'rgba(66, 165, 245, 0.2)', text: '#1976D2' };
+      case 'VERIFIED':
+        return { bg: 'rgba(171, 71, 188, 0.2)', text: '#7B1FA2' };
+      case 'REPORTED':
       default:
-        return { bg: 'rgba(158, 158, 158, 0.2)', text: '#757575' };
+        return { bg: 'rgba(239, 83, 80, 0.2)', text: '#D32F2F' };
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Неизвестна дата';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('bg-BG', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleViewOnMap = () => {
+    setModalVisible(false);
+    navigation.navigate('Map');
   };
 
   return (
@@ -136,7 +151,7 @@ const AdminScreen: React.FC = () => {
       <StatusBar style="dark" />
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Admin Panel</Text>
+        <Text style={styles.headerTitle}>Админ панел</Text>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={24} color="#757575" />
         </TouchableOpacity>
@@ -147,25 +162,25 @@ const AdminScreen: React.FC = () => {
           style={[styles.filterButton, activeFilter === '' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('')}
         >
-          <Text style={activeFilter === '' ? styles.activeFilterText : styles.filterText}>All</Text>
+          <Text style={activeFilter === '' ? styles.activeFilterText : styles.filterText}>Всички</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'REPORTED' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('REPORTED')}
         >
-          <Text style={activeFilter === 'REPORTED' ? styles.activeFilterText : styles.filterText}>Pending</Text>
+          <Text style={activeFilter === 'REPORTED' ? styles.activeFilterText : styles.filterText}>Докладвано</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'IN_PROGRESS' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('IN_PROGRESS')}
         >
-          <Text style={activeFilter === 'IN_PROGRESS' ? styles.activeFilterText : styles.filterText}>In Progress</Text>
+          <Text style={activeFilter === 'IN_PROGRESS' ? styles.activeFilterText : styles.filterText}>В процес</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.filterButton, activeFilter === 'CLEANED' && styles.activeFilterButton]}
           onPress={() => setActiveFilter('CLEANED')}
         >
-          <Text style={activeFilter === 'CLEANED' ? styles.activeFilterText : styles.filterText}>Cleaned</Text>
+          <Text style={activeFilter === 'CLEANED' ? styles.activeFilterText : styles.filterText}>Почистено</Text>
         </TouchableOpacity>
       </View>
       
@@ -178,14 +193,14 @@ const AdminScreen: React.FC = () => {
       >
         {loading && !refreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4CAF50" />
-            <Text style={styles.loadingText}>Loading reports...</Text>
+            <ActivityIndicator size="large" color={ChemistryTheme.colors.primary} />
+            <Text style={styles.loadingText}>Зареждане на докладите...</Text>
           </View>
         ) : filteredReports.length > 0 ? (
           filteredReports.map(report => {
             // Use the status or default to 'REPORTED'
             const status = (report.status || 'REPORTED').toUpperCase();
-            const statusStyle = getStatusColor(status);
+            const statusStyle = getStatusColors(status);
             
             return (
               <TouchableOpacity 
@@ -194,10 +209,10 @@ const AdminScreen: React.FC = () => {
                 onPress={() => handleReportPress(report)}
               >
                 <View style={styles.reportHeader}>
-                  <Text style={styles.reportTitle}>Report #{report.id}</Text>
+                  <Text style={styles.reportTitle}>Доклад №{report.id}</Text>
                   <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                     <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                      {status.replace('_', ' ')}
+                      {getStatusLabel(status)}
                     </Text>
                   </View>
                 </View>
@@ -217,10 +232,10 @@ const AdminScreen: React.FC = () => {
                       </Text>
                     )}
                     <Text style={styles.reportLocation}>
-                      Lat: {typeof report.latitude === 'string' 
+                      Ширина: {typeof report.latitude === 'string' 
                             ? parseFloat(report.latitude).toFixed(4) 
                             : report.latitude.toFixed(4)}, 
-                      Lon: {typeof report.longitude === 'string'
+                      Дължина: {typeof report.longitude === 'string'
                             ? parseFloat(report.longitude).toFixed(4)
                             : report.longitude.toFixed(4)}
                     </Text>
@@ -232,7 +247,7 @@ const AdminScreen: React.FC = () => {
         ) : (
           <View style={styles.emptyContainer}>
             <Ionicons name="document-text-outline" size={60} color="#BDBDBD" />
-            <Text style={styles.emptyText}>No reports in this category</Text>
+            <Text style={styles.emptyText}>Няма доклади в тази категория</Text>
           </View>
         )}
       </ScrollView>
@@ -247,7 +262,7 @@ const AdminScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Report Details</Text>
+              <Text style={styles.modalTitle}>Подробности за доклада</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color="#757575" />
               </TouchableOpacity>
@@ -255,53 +270,55 @@ const AdminScreen: React.FC = () => {
             
             {selectedReport && (
               <View style={styles.modalContent}>
-                <Image 
-                  source={{ uri: selectedReport.photo_url || selectedReport.photoUrl || selectedReport.imageUrl }}
-                  style={styles.modalImage}
-                />
+                {selectedReport.imageUrl ? (
+                  <Image
+                    source={{ uri: selectedReport.imageUrl }}
+                    style={styles.modalImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.modalImage}>
+                    <Text style={styles.modalImagePlaceholder}>Няма снимка</Text>
+                  </View>
+                )}
                 
                 <View style={styles.modalInfo}>
-                  <Text style={styles.modalInfoTitle}>Report #{selectedReport.id}</Text>
+                  <Text style={styles.modalInfoTitle}>Доклад №{selectedReport.id}</Text>
                   <Text style={styles.modalInfoDate}>
-                    {formatDate(selectedReport.created_at || selectedReport.createdAt || '')}
+                    Докладвано на {formatDate(selectedReport.createdAt)}
                   </Text>
                   
-                  {selectedReport.description && (
-                    <View style={styles.modalInfoSection}>
-                      <Text style={styles.modalInfoLabel}>Description:</Text>
-                      <Text style={styles.modalInfoText}>{selectedReport.description}</Text>
-                    </View>
-                  )}
-                  
                   <View style={styles.modalInfoSection}>
-                    <Text style={styles.modalInfoLabel}>Location:</Text>
+                    <Text style={styles.modalInfoLabel}>Местоположение:</Text>
                     <Text style={styles.modalInfoText}>
-                      Latitude: {typeof selectedReport.latitude === 'string' 
-                                ? parseFloat(selectedReport.latitude).toFixed(6) 
-                                : selectedReport.latitude.toFixed(6)}{'\n'}
-                      Longitude: {typeof selectedReport.longitude === 'string'
-                                ? parseFloat(selectedReport.longitude).toFixed(6)
-                                : selectedReport.longitude.toFixed(6)}
+                      {`Ширина: ${typeof selectedReport.latitude === 'string' 
+                        ? parseFloat(selectedReport.latitude).toFixed(6)
+                        : selectedReport.latitude.toFixed(6)}`}
+                    </Text>
+                    <Text style={styles.modalInfoText}>
+                      {`Дължина: ${typeof selectedReport.longitude === 'string'
+                        ? parseFloat(selectedReport.longitude).toFixed(6)
+                        : selectedReport.longitude.toFixed(6)}`}
                     </Text>
                   </View>
                   
                   <View style={styles.modalInfoSection}>
-                    <Text style={styles.modalInfoLabel}>Current Status:</Text>
+                    <Text style={styles.modalInfoLabel}>Текущ статус:</Text>
                     <View style={[
                       styles.statusBadge, 
-                      { backgroundColor: getStatusColor(selectedReport.status || 'REPORTED').bg }
+                      { backgroundColor: getStatusColors(selectedReport.status || 'REPORTED').bg }
                     ]}>
                       <Text style={[
                         styles.statusText, 
-                        { color: getStatusColor(selectedReport.status || 'REPORTED').text }
+                        { color: getStatusColors(selectedReport.status || 'REPORTED').text }
                       ]}>
-                        {(selectedReport.status || 'REPORTED').toUpperCase().replace('_', ' ')}
+                        {statusOptions.find(opt => opt.value === (selectedReport.status || 'REPORTED'))?.label || 'Докладвано'}
                       </Text>
                     </View>
                   </View>
                   
                   <View style={styles.modalActions}>
-                    <Text style={styles.modalInfoLabel}>Update Status:</Text>
+                    <Text style={styles.modalInfoLabel}>Промяна на статус:</Text>
                     <View style={styles.statusButtons}>
                       {statusOptions.map(option => (
                         <TouchableOpacity 
@@ -326,16 +343,13 @@ const AdminScreen: React.FC = () => {
                   
                   <TouchableOpacity 
                     style={styles.viewMapButton}
-                    onPress={() => {
-                      setModalVisible(false);
-                      navigation.navigate('Map');
-                    }}
+                    onPress={handleViewOnMap}
                   >
                     <LinearGradient
-                      colors={['#66BB6A', '#4CAF50']}
+                      colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                       style={styles.gradientButton}
                     >
-                      <Text style={styles.viewMapButtonText}>View on Map</Text>
+                      <Text style={styles.viewMapButtonText}>Виж на картата</Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -389,14 +403,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   activeFilterButton: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: 'rgba(59, 89, 152, 0.2)',
   },
   filterText: {
     color: '#757575',
     fontSize: 14,
   },
   activeFilterText: {
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -523,6 +537,12 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: '#E0E0E0',
   },
+  modalImagePlaceholder: {
+    textAlign: 'center',
+    color: '#757575',
+    fontSize: 14,
+    marginTop: 80,
+  },
   modalInfo: {
     padding: 16,
   },
@@ -569,15 +589,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeStatusButton: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#4CAF50',
+    backgroundColor: 'rgba(59, 89, 152, 0.2)',
+    borderColor: ChemistryTheme.colors.primary,
   },
   statusButtonText: {
     fontSize: 12,
     color: '#757575',
   },
   activeStatusButtonText: {
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontWeight: 'bold',
   },
   viewMapButton: {
@@ -598,4 +618,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AdminScreen; 
+export default AdminScreen;

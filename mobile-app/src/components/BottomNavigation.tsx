@@ -10,6 +10,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ChemistryTheme } from '../theme/theme';
+import ChemistryIcon from '../../assets/chemistry-icon';
+import EcoIcon from '../../assets/eco-icon';
 
 const { width } = Dimensions.get('window');
 
@@ -37,7 +40,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
   };
 
   const renderIcon = (screen: string, isActive: boolean) => {
-    const color = isActive ? '#4CAF50' : '#757575';
+    const color = isActive ? ChemistryTheme.colors.primary : '#757575';
     const size = isActive ? 28 : 24;
     
     switch (screen) {
@@ -51,9 +54,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
         );
       case 'Map':
         return (
-          <Ionicons
-            name={isActive ? 'map' : 'map-outline'}
-            size={size}
+          <EcoIcon
+            width={size}
+            height={size}
             color={color}
           />
         );
@@ -70,6 +73,15 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
     }
   };
 
+  const getLabel = (screen: string) => {
+    switch (screen) {
+      case 'Camera': return 'Камера';
+      case 'Map': return 'Eкология';
+      case 'Profile': return 'Профил';
+      default: return screen;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -83,7 +95,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
             onPress={() => navigateTo('Camera')}
           >
             <LinearGradient
-              colors={['#66BB6A', '#4CAF50']}
+              colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
               style={styles.centerButtonGradient}
             >
               <Ionicons name="camera" size={28} color="white" />
@@ -98,7 +110,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
           >
             {renderIcon('Camera', currentScreen === 'Camera')}
             <Text style={[styles.navText, currentScreen === 'Camera' && styles.activeNavText]}>
-              Camera
+              {getLabel('Camera')}
             </Text>
           </TouchableOpacity>
 
@@ -108,7 +120,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
           >
             {renderIcon('Map', currentScreen === 'Map')}
             <Text style={[styles.navText, currentScreen === 'Map' && styles.activeNavText]}>
-              Map
+              {getLabel('Map')}
             </Text>
           </TouchableOpacity>
 
@@ -118,7 +130,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentScreen }) =>
           >
             {renderIcon('Profile', currentScreen === 'Profile')}
             <Text style={[styles.navText, currentScreen === 'Profile' && styles.activeNavText]}>
-              Profile
+              {getLabel('Profile')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -160,7 +172,7 @@ const styles = StyleSheet.create({
   },
   activeNavItem: {
     borderBottomWidth: 3,
-    borderBottomColor: '#4CAF50',
+    borderBottomColor: ChemistryTheme.colors.primary,
   },
   navText: {
     fontSize: 12,
@@ -168,7 +180,7 @@ const styles = StyleSheet.create({
     color: '#757575',
   },
   activeNavText: {
-    color: '#4CAF50',
+    color: ChemistryTheme.colors.primary,
     fontWeight: '600',
   },
   centerButton: {

@@ -20,6 +20,10 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import { loginUser, registerUser } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { ChemistryTheme } from '../theme/theme';
+import SchoolLogoIcon from '../../assets/school-logo-icon';
+import ChemistryIcon from '../../assets/chemistry-icon';
+import EcoIcon from '../../assets/eco-icon';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Welcome'>;
 
@@ -49,7 +53,7 @@ const WelcomeScreen: React.FC = () => {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      setError('Please enter both username and password');
+      setError('Моля, въведете и двете потребителско име и парола');
       return;
     }
 
@@ -68,11 +72,11 @@ const WelcomeScreen: React.FC = () => {
     } catch (err) {
       // Check for specific error types
       if (err.response && err.response.status === 401) {
-        setError('Invalid username or password');
+        setError('Невалидно потребителско име или парола');
       } else if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
       } else {
-        setError('Login failed. Please try again.');
+        setError('Грешка при вход. Моля, опитайте отново.');
         console.error('Login error:', err);
       }
     } finally {
@@ -82,12 +86,12 @@ const WelcomeScreen: React.FC = () => {
 
   const handleRegister = async () => {
     if (!username || !password || !email) {
-      setError('Please fill in all fields');
+      setError('Моля, попълнете всички полета');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Паролата трябва да бъде поне 6 символа');
       return;
     }
 
@@ -100,8 +104,8 @@ const WelcomeScreen: React.FC = () => {
       
       // Show success message and switch to login
       Alert.alert(
-        'Registration Successful',
-        'Your account has been created. You will be logged in automatically.',
+        'Регистрация успешна',
+        'Вашият акаунт е създаден. Ще бъдете автоматично влязли в системата.',
         [{ 
           text: 'OK', 
           onPress: async () => {
@@ -114,11 +118,11 @@ const WelcomeScreen: React.FC = () => {
     } catch (err) {
       // Check for specific error types
       if (err.response && err.response.status === 409) {
-        setError('Username or email already exists');
+        setError('Потребителско име или имейл вече съществува');
       } else if (err.response && err.response.data && err.response.data.error) {
         setError(err.response.data.error);
       } else {
-        setError('Registration failed. Please try again.');
+        setError('Грешка при регистрация. Моля, опитайте отново.');
         console.error('Registration error:', err);
       }
     } finally {
@@ -132,30 +136,36 @@ const WelcomeScreen: React.FC = () => {
 
   const renderWelcomeScreen = () => (
     <View style={styles.buttonContainer}>
+      <View style={styles.iconRow}>
+        <ChemistryIcon width={36} height={36} color={ChemistryTheme.colors.primary} />
+        <EcoIcon width={36} height={36} color={ChemistryTheme.colors.success} />
+      </View>
+      
+      
       <TouchableOpacity style={styles.primaryButton} onPress={handleGetStarted}>
         <LinearGradient
-          colors={['#66BB6A', '#4CAF50']}
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
           style={styles.gradientButton}
         >
-          <Text style={styles.buttonText}>Get Started</Text>
+          <Text style={styles.buttonText}>Вход</Text>
         </LinearGradient>
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.secondaryButton} onPress={handleGuestLogin}>
-        <Text style={styles.secondaryButtonText}>Continue as Guest</Text>
+        <Text style={styles.secondaryButtonText}>Продължете като гост</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderLoginScreen = () => (
     <View style={styles.loginContainer}>
-      <Text style={styles.loginHeader}>Login</Text>
+      <Text style={styles.loginHeader}>Вход</Text>
       
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={styles.errorText}>Грешка при вход</Text> : null}
       
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Потребителско име"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
@@ -164,7 +174,7 @@ const WelcomeScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Парола"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -177,39 +187,39 @@ const WelcomeScreen: React.FC = () => {
         disabled={loading}
       >
         <LinearGradient
-          colors={['#66BB6A', '#4CAF50']}
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
           style={styles.gradientButton}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>Вход</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
       
       <View style={styles.registerPrompt}>
-        <Text style={styles.registerText}>Don't have an account? </Text>
+        <Text style={styles.registerText}>Не имате акаунт? </Text>
         <TouchableOpacity onPress={() => setMode('register')}>
-          <Text style={styles.registerLink}>Sign Up</Text>
+          <Text style={styles.registerLink}>Регистрация</Text>
         </TouchableOpacity>
       </View>
       
       <TouchableOpacity onPress={() => setMode('welcome')} style={styles.backButton}>
-        <Text style={styles.backText}>Back</Text>
+        <Text style={styles.backText}>Назад</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderRegisterScreen = () => (
     <View style={styles.loginContainer}>
-      <Text style={styles.loginHeader}>Create Account</Text>
+      <Text style={styles.loginHeader}>Създаване на акаунт</Text>
       
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={styles.errorText}>Грешка при регистрация</Text> : null}
       
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Потребителско име"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
@@ -218,7 +228,7 @@ const WelcomeScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Имейл"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -228,7 +238,7 @@ const WelcomeScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Парола"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -241,56 +251,56 @@ const WelcomeScreen: React.FC = () => {
         disabled={loading}
       >
         <LinearGradient
-          colors={['#66BB6A', '#4CAF50']}
+          colors={[ChemistryTheme.colors.primary, ChemistryTheme.colors.secondary]}
           style={styles.gradientButton}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Text style={styles.buttonText}>Sign Up</Text>
+            <Text style={styles.buttonText}>Регистрация</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
       
       <View style={styles.registerPrompt}>
-        <Text style={styles.registerText}>Already have an account? </Text>
+        <Text style={styles.registerText}>Вече имате акаунт? </Text>
         <TouchableOpacity onPress={() => setMode('login')}>
-          <Text style={styles.registerLink}>Login</Text>
+          <Text style={styles.registerLink}>Вход</Text>
         </TouchableOpacity>
       </View>
       
       <TouchableOpacity onPress={() => setMode('welcome')} style={styles.backButton}>
-        <Text style={styles.backText}>Back</Text>
+        <Text style={styles.backText}>Назад</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       
       <LinearGradient
-        colors={['#4CAF50', '#2E7D32']}
+        colors={[ChemistryTheme.colors.background, '#ffffff']}
         style={styles.backgroundGradient}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+          style={styles.keyboardAvoid}
         >
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.logoContainer}>
-              <Image 
-                source={require('../../assets/icon.png')} 
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={styles.appName}>TrashTracker</Text>
-              <Text style={styles.tagline}>Help keep our environment clean</Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.content}>
+              <View style={styles.logoContainer}>
+                <SchoolLogoIcon size={100} />
+                <Text style={styles.logoText}>Химия за околната среда</Text>
+              </View>
+              
+              {mode === 'welcome' && renderWelcomeScreen()}
+              {mode === 'login' && renderLoginScreen()}
+              {mode === 'register' && renderRegisterScreen()}
             </View>
-
-            {mode === 'welcome' && renderWelcomeScreen()}
-            {mode === 'login' && renderLoginScreen()}
-            {mode === 'register' && renderRegisterScreen()}
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
@@ -305,55 +315,73 @@ const styles = StyleSheet.create({
   backgroundGradient: {
     flex: 1,
   },
-  keyboardView: {
+  keyboardAvoid: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 20,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: 20,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
-    borderRadius: 60,
-    backgroundColor: 'white',
-    padding: 10,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: 'white',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  tagline: {
+  logoText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: ChemistryTheme.colors.primary,
+    fontWeight: '500',
     marginTop: 8,
+    textAlign: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: ChemistryTheme.colors.primary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: ChemistryTheme.colors.text,
+    marginBottom: 30,
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  loginHeader: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: ChemistryTheme.colors.primary,
   },
   buttonContainer: {
     width: '100%',
+    maxWidth: 300,
     alignItems: 'center',
   },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    width: '100%',
+  },
   primaryButton: {
-    width: '80%',
-    height: 54,
-    borderRadius: 27,
-    marginBottom: 16,
+    width: '100%',
+    height: 50,
+    borderRadius: 25,
     overflow: 'hidden',
+    marginBottom: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowRadius: 2,
   },
   gradientButton: {
     width: '100%',
@@ -363,88 +391,68 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  secondaryButton: {
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 20,
-  },
-  secondaryButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
+  secondaryButton: {
+    width: '100%',
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    color: ChemistryTheme.colors.primary,
+    fontSize: 16,
+  },
   loginContainer: {
     width: '100%',
+    maxWidth: 300,
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 24,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  loginHeader: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 24,
-  },
-  errorText: {
-    color: '#F44336',
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: 'center',
   },
   input: {
     width: '100%',
     height: 50,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 12,
+    paddingHorizontal: 15,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    backgroundColor: '#F5F5F5',
-    fontSize: 16,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   loginButton: {
     width: '100%',
     height: 50,
     borderRadius: 25,
-    marginTop: 16,
-    marginBottom: 16,
     overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 15,
   },
   disabledButton: {
     opacity: 0.7,
   },
   registerPrompt: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginTop: 10,
   },
   registerText: {
-    color: '#666',
-    fontSize: 14,
+    color: ChemistryTheme.colors.text,
   },
   registerLink: {
-    color: '#4CAF50',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: ChemistryTheme.colors.primary,
+    fontWeight: '600',
   },
   backButton: {
-    padding: 8,
+    marginTop: 20,
+    padding: 10,
   },
   backText: {
-    color: '#666',
-    fontSize: 16,
+    color: ChemistryTheme.colors.primary,
+    fontWeight: '500',
+  },
+  errorText: {
+    color: ChemistryTheme.colors.error,
+    marginBottom: 15,
+    textAlign: 'center',
   },
 });
 

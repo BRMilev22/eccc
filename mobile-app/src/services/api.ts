@@ -4,10 +4,10 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Get the correct API URL based on platform
-// Use the actual IP address of your computer for all devices
+// For hotspot connectivity, we're using a dynamic approach
 const getApiBaseUrl = () => {
-  // Use local IP address instead of localhost
-  return 'http://192.168.0.105:3000/api';  // Local network IP address
+  // When using a hotspot, we need to use the actual IP address of the device running the API
+  return 'http://192.168.0.103:3000/api'; // Using the detected IP address from ifconfig
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -149,9 +149,8 @@ export const submitTrashReport = async (data: {
     
     return response.data;
   } catch (error: any) {
-    console.error('Error submitting trash report:', error);
-    console.log('Error response:', error.response?.data);
-    throw new Error(error.response?.data?.error || 'Failed to submit trash report');
+    console.error('Error submitting trash report:', error);      console.log('Error response:', error.response?.data);
+      throw new Error(error.response?.data?.error || 'Неуспешно изпращане на доклад');
   }
 };
 

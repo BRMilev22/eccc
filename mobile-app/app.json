@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "TrashTracker",
-    "slug": "trash-tracker",
+    "name": "ChemEco",
+    "slug": "chem-eco",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/vscpi-logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/vscpi-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#4CAF50"
+      "backgroundColor": "#3b5998"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -24,14 +24,14 @@
         "googleMapsApiKey": "YOUR_IOS_API_KEY"
       },
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to take photos of trash piles.",
-        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show it on the map and associate it with trash reports."
+        "NSCameraUsageDescription": "This app uses the camera to take photos of environmental issues.",
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show it on the map and associate it with environmental reports."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#4CAF50"
+        "foregroundImage": "./assets/vscpi-logo.png",
+        "backgroundColor": "#3b5998"
       },
       "package": "com.trashtracker.app",
       "config": {
@@ -53,8 +53,7 @@
       "expo-image-picker",
       "expo-splash-screen"
     ],
-    "sdkVersion": "52.0.0",
-    "jsEngine": "hermes",
-    "newArchEnabled": false
+    "sdkVersion": "53.0.0",
+    "jsEngine": "hermes"
   }
 }

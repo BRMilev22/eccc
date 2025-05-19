@@ -20,24 +20,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { TrashReport, updateTrashReport, getCurrentUser } from '../services/api';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import TrashIcon from '../../assets/trash-icon';
+import { ChemistryTheme } from '../theme/theme';
 
 type DetailScreenRouteProp = RouteProp<RootStackParamList, 'Details'>;
 
 // Define status colors for status badge
 const statusColors = {
-  REPORTED: '#EF5350',
-  IN_PROGRESS: '#42A5F5',
-  CLEANED: '#66BB6A',
-  VERIFIED: '#AB47BC',
-  DEFAULT: '#9E9E9E'
+  REPORTED: '#FF5252',
+  IN_PROGRESS: '#2196F3',
+  CLEANED: ChemistryTheme.colors.primary,
+  VERIFIED: '#9C27B0'
 };
 
 // Define status descriptions
 const statusDescriptions = {
-  REPORTED: 'Newly reported trash that needs attention',
-  IN_PROGRESS: 'Cleanup is currently in progress',
-  CLEANED: 'This location has been cleaned',
-  VERIFIED: 'The cleanup has been verified'
+  REPORTED: 'Ново съобщение за боклук, което изисква внимание',
+  IN_PROGRESS: 'Очистването е в процес',
+  CLEANED: 'Този район е почистен',
+  VERIFIED: 'Очистването е потвърдено'
 };
 
 const DetailScreen: React.FC = () => {
@@ -104,26 +104,25 @@ const DetailScreen: React.FC = () => {
         : report.longitude;
 
       const result = await Share.share({
-        message: `Help clean up trash! Location: https://maps.google.com/maps?q=${latitude},${longitude} | Trash Tracker Report #${report.id}`,
-        title: 'Help clean up trash in your area!'
+        message: `Помогнете за почистването на боклука! Местоположение: https://maps.google.com/maps?q=${latitude},${longitude} | Trash Tracker Доклад #${report.id}`,
+        title: 'Помогнете за почистването на боклука във вашия район!'
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share report');
+      Alert.alert('Грешка', 'Неуспешно споделяне на доклада');
     }
   };
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: keyof typeof statusDescriptions) => {
     try {
       setLoading(true);
       const response = await updateTrashReport(report.id, { status: newStatus });
-      
       if (response) {
         setCurrentStatus(newStatus);
-        Alert.alert('Success', `Report status updated to ${newStatus.replace('_', ' ').toLowerCase()}`);
+        Alert.alert('Успешно', `Статусът на доклада е променен на ${statusDescriptions[newStatus]}`);
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      Alert.alert('Error', 'Failed to update report status');
+      Alert.alert('Грешка', 'Неуспешно обновяване на статуса');
     } finally {
       setLoading(false);
       setStatusOptionsVisible(false);
@@ -132,7 +131,7 @@ const DetailScreen: React.FC = () => {
 
   const getFormattedDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('bg-BG', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -158,10 +157,10 @@ const DetailScreen: React.FC = () => {
           </TouchableOpacity>
           
           <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Trash Report #{report.id}</Text>
+            <Text style={styles.headerTitle}>Подробности</Text>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(currentStatus) }]}>
               <Text style={styles.statusText}>
-                {currentStatus.replace('_', ' ')}
+                {statusDescriptions[currentStatus as keyof typeof statusDescriptions]}
               </Text>
             </View>
           </View>
@@ -174,7 +173,7 @@ const DetailScreen: React.FC = () => {
               colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.8)']}
               style={styles.shareButtonGradient}
             >
-              <Ionicons name="share-outline" size={20} color="#2E7D32" />
+              <Ionicons name="share-outline" size={20} color={ChemistryTheme.colors.primary} />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -189,7 +188,7 @@ const DetailScreen: React.FC = () => {
           ) : (
             <View style={styles.noImageContainer}>
               <Ionicons name="image-outline" size={60} color="#BDBDBD" />
-              <Text style={styles.noImageText}>No image available</Text>
+              <Text style={styles.noImageText}>Няма налично изображение</Text>
             </View>
           )}
         </View>
@@ -214,60 +213,60 @@ const DetailScreen: React.FC = () => {
               </LinearGradient>
             </View>
             <View style={styles.statusInfoText}>
-              <Text style={styles.statusInfoTitle}>Status: {currentStatus.replace('_', ' ')}</Text>
+              <Text style={styles.statusInfoTitle}>Статус: {currentStatus.replace('_', ' ')}</Text>
               <Text style={styles.statusInfoDescription}>
-                {statusDescriptions[currentStatus] || 'No status information available'}
+                {statusDescriptions[currentStatus as keyof typeof statusDescriptions] || 'Няма налична информация за статуса'}
               </Text>
             </View>
           </View>
           
           <View style={styles.detailsSection}>
-            <Text style={styles.sectionTitle}>Details</Text>
+            <Text style={styles.sectionTitle}>Описание</Text>
             
             <View style={styles.detailsRow}>
               <View style={styles.detailsIconContainer}>
-                <Ionicons name="calendar-outline" size={20} color="#4CAF50" />
+                <Ionicons name="calendar-outline" size={20} color={ChemistryTheme.colors.primary} />
               </View>
               <View style={styles.detailsContent}>
-                <Text style={styles.detailsLabel}>Reported</Text>
-                <Text style={styles.detailsValue}>{report.created_at ? getFormattedDate(report.created_at) : 'Unknown'}</Text>
+                <Text style={styles.detailsLabel}>Дата на доклад</Text>
+                <Text style={styles.detailsValue}>{report.createdAt ? getFormattedDate(report.createdAt) : 'Неизвестна'}</Text>
               </View>
             </View>
             
-            {report.trash_type && (
+            {report.trashType && (
               <View style={styles.detailsRow}>
                 <View style={styles.detailsIconContainer}>
-                  <Ionicons name="trash-outline" size={20} color="#4CAF50" />
+                  <Ionicons name="trash-outline" size={20} color={ChemistryTheme.colors.primary} />
                 </View>
                 <View style={styles.detailsContent}>
-                  <Text style={styles.detailsLabel}>Trash Type</Text>
-                  <Text style={styles.detailsValue}>{report.trash_type}</Text>
+                  <Text style={styles.detailsLabel}>Тип отпадък</Text>
+                  <Text style={styles.detailsValue}>{report.trashType}</Text>
                 </View>
               </View>
             )}
             
-            {report.severity && (
+            {report.severityLevel && (
               <View style={styles.detailsRow}>
                 <View style={styles.detailsIconContainer}>
-                  <Ionicons name="warning-outline" size={20} color="#4CAF50" />
+                  <Ionicons name="warning-outline" size={20} color={ChemistryTheme.colors.primary} />
                 </View>
                 <View style={styles.detailsContent}>
-                  <Text style={styles.detailsLabel}>Severity</Text>
-                  <Text style={styles.detailsValue}>{report.severity}</Text>
+                  <Text style={styles.detailsLabel}>Сериозност</Text>
+                  <Text style={styles.detailsValue}>{report.severityLevel}</Text>
                 </View>
               </View>
             )}
             
             {report.description && (
               <View style={styles.descriptionContainer}>
-                <Text style={styles.descriptionLabel}>Description</Text>
+                <Text style={styles.descriptionLabel}>Описание</Text>
                 <Text style={styles.descriptionText}>{report.description}</Text>
               </View>
             )}
           </View>
           
           <View style={styles.mapSection}>
-            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={styles.sectionTitle}>Местоположение</Text>
             
             <View style={styles.mapContainer}>
               <MapView
@@ -306,10 +305,10 @@ const DetailScreen: React.FC = () => {
                 onPress={handleViewOnMap}
               >
                 <LinearGradient
-                  colors={['#66BB6A', '#4CAF50']}
+                  colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                   style={styles.mapActionButtonGradient}
                 >
-                  <Text style={styles.mapActionButtonText}>View in Maps</Text>
+                  <Text style={styles.mapActionButtonText}>Отвори в Карти</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -322,8 +321,8 @@ const DetailScreen: React.FC = () => {
           {statusOptionsVisible ? (
             <View style={styles.statusOptionsContainer}>
               <View style={styles.statusOptionsCard}>
-                <Text style={styles.statusOptionsTitle}>Update Status</Text>
-                {Object.keys(statusDescriptions).map((status) => (
+                <Text style={styles.statusOptionsTitle}>Промяна на статус</Text>
+                {(Object.keys(statusDescriptions) as Array<keyof typeof statusDescriptions>).map((status) => (
                   <TouchableOpacity
                     key={status}
                     style={[
@@ -345,7 +344,7 @@ const DetailScreen: React.FC = () => {
                         status === currentStatus && styles.statusOptionTextActive
                       ]}
                     >
-                      {status.replace('_', ' ')}
+                      {statusDescriptions[status]}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -353,7 +352,7 @@ const DetailScreen: React.FC = () => {
                   style={styles.closeStatusOptionsButton}
                   onPress={() => setStatusOptionsVisible(false)}
                 >
-                  <Text style={styles.closeStatusOptionsText}>Cancel</Text>
+                  <Text style={styles.closeStatusOptionsText}>Отказ</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -363,11 +362,11 @@ const DetailScreen: React.FC = () => {
               onPress={() => setStatusOptionsVisible(true)}
             >
               <LinearGradient
-                colors={['#66BB6A', '#4CAF50']}
+                colors={[ChemistryTheme.colors.secondary, ChemistryTheme.colors.primary]}
                 style={styles.adminActionButtonGradient}
               >
                 <Ionicons name="create-outline" size={20} color="#FFF" style={styles.adminActionButtonIcon} />
-                <Text style={styles.adminActionButtonText}>Update Status</Text>
+                <Text style={styles.adminActionButtonText}>Промяна на статус</Text>
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -410,7 +409,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 24,
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
   },
   headerTextContainer: {
     flex: 1,
@@ -418,7 +417,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 4,
   },
   statusBadge: {
@@ -514,7 +513,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 16,
   },
   detailsRow: {
@@ -651,7 +650,7 @@ const styles = StyleSheet.create({
   statusOptionsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -678,7 +677,7 @@ const styles = StyleSheet.create({
   },
   statusOptionTextActive: {
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: ChemistryTheme.colors.primary,
   },
   closeStatusOptionsButton: {
     paddingVertical: 12,
@@ -691,4 +690,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default DetailScreen; 
+export default DetailScreen;
