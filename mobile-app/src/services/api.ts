@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // For hotspot connectivity, we're using a dynamic approach
 const getApiBaseUrl = () => {
   // When using a hotspot, we need to use the actual IP address of the device running the API
-  return 'http://192.168.0.103:3000/api'; // Using the detected IP address from ifconfig
+  return 'http://192.168.0.110:3000/api'; // Using the detected IP address from ifconfig
 };
 
 const API_BASE_URL = getApiBaseUrl();
