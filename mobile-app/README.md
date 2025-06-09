@@ -250,8 +250,6 @@ eas build --platform ios
 ## 👥 Екип
 
 - **Борис Милев** [@BRMilev22](https://github.com/BRMilev22) - Lead Developer & Mobile App
-- **Веселин Боянов** [@VBBoyanov22](https://github.com/VBBoyanov22) - Web Developer
-- **Димитър Димитраков** [@DPDimitrakov22](https://github.com/DPDimitrakov22) - Database & Testing
 - **ПГКПИ** - Образователна поддръжка
 
 ## 🔗 Полезни връзки
